@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>쇼핑몰 메인</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="/" class="brand">Soldesk Mall</a>
+      <nav class="nav">
+        <a class="btn btn-secondary" href="/login.html">로그인</a>
+        <a class="btn btn-secondary" href="/signup.html">회원가입</a>
+        <a class="btn btn-primary" href="/product-create.html">상품등록</a>
+        <div id="userBox" class="btn btn-secondary"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>메인페이지</h1>
+      <p>로그인, 회원가입, 상품등록이 가능한 쇼핑몰 메인 화면입니다. 등록한 상품은 아래 목록에 바로 표시됩니다.</p>
+    </section>
+
+    <section>
+      <div id="productList" class="grid"></div>
+    </section>
+  </main>
+
+  <footer class="footer container">
+    프론트엔드 + 백엔드 연동 예제
+  </footer>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    renderHeader();
+    loadProducts();
+  </script>
+</body>
+</html>

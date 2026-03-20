@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="/" class="brand">Soldesk Mall</a>
+      <nav class="nav">
+        <a class="btn btn-secondary" href="/">메인</a>
+        <a class="btn btn-secondary" href="/signup.html">회원가입</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="form-wrap">
+    <h2>로그인</h2>
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">이메일</label>
+        <input id="email" name="email" type="email" required>
+      </div>
+      <div class="field">
+        <label for="password">비밀번호</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">로그인</button>
+      <div id="loginMessage" style="display:none;"></div>
+    </form>
+  </section>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    renderHeader();
+
+    document.getElementById('loginForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const payload = {
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      };
+
+      try {
+        const result = await apiRequest('/member-service/member/doLogin', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        saveAuth(result);
+        showMessage('loginMessage', '로그인에 성공했습니다. 메인페이지로 이동합니다.', 'success');
+        setTimeout(function () {
+          window.location.href = '/';
+        }, 700);
+      } catch (error) {
+        showMessage('loginMessage', '로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

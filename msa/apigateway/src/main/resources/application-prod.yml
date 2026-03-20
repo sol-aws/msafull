@@ -1,0 +1,62 @@
+eureka:
+  client:
+    enabled: false
+
+spring:
+  config:
+    activate:
+      on-profile: prod   # prod 프로필일 때만 이 설정 적용
+
+  application:
+    name: api-gateway    # 게이트웨이 서비스 이름
+
+  # Spring Cloud Gateway 설정
+  cloud:
+    gateway:
+      # 브라우저에서 다른 도메인에서 호출할 때 허용 범위 설정
+      # 현재는 server.aws-esk.com 도메인만 허용
+      globalcors:
+        cors-configurations:
+          '[/**]':   # 모든 경로에 대해 CORS 적용
+            allowedOrigins:
+              - 'https://server.aws-esk.com'  # 허용할 도메인
+            allowedMethods: '*'               # 모든 HTTP 메서드 허용
+            allowedHeaders: '*'               # 모든 헤더 허용
+            allowedCredentials: true          # 쿠키/인증정보 허용
+
+      # 라우팅 설정 (MSA 핵심)
+      routes:
+        # 1MEMBER 서비스
+        # 외부 요청:
+        # https://server.aws-esk.com/member-service/...
+        # /member-service 제거  -->   member-service 로 전달
+        - id: member-service
+          predicates:
+            - Path=/member-service/**   # 해당 prefix로 시작하면 매칭
+          filters:
+            # StripPrefix=1
+            # 첫번째 경로(/member-service)를 제거
+            # 예:/member-service/member/doLogin  -->   /member/doLogin 으로 변환
+            - StripPrefix=1
+          uri: http://member-service    # K8s 내부 서비스명
+
+        # ORDERING 서비스
+        # 외부:https://server.aws-esk.com/ordering-service/...
+        - id: ordering-service
+          predicates:
+            - Path=/ordering-service/**
+          filters:
+            - StripPrefix=1
+          uri: http://ordering-service
+
+        # PRODUCT 서비스
+        # 외부:https://server.aws-esk.com/product-service/...
+        - id: product-service
+          predicates:
+            - Path=/product-service/**
+          filters:
+            - StripPrefix=1
+          uri: http://product-service
+
+jwt:
+  secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>회원가입</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="/" class="brand">Soldesk Mall</a>
+      <nav class="nav">
+        <a class="btn btn-secondary" href="/">메인</a>
+        <a class="btn btn-secondary" href="/login.html">로그인</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="form-wrap">
+    <h2>회원가입</h2>
+    <form id="signupForm">
+      <div class="field">
+        <label for="name">이름</label>
+        <input id="name" name="name" type="text" required>
+      </div>
+      <div class="field">
+        <label for="email">이메일</label>
+        <input id="email" name="email" type="email" required>
+      </div>
+      <div class="field">
+        <label for="password">비밀번호</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit">회원가입</button>
+      <div id="signupMessage" style="display:none;"></div>
+    </form>
+  </section>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    renderHeader();
+
+    document.getElementById('signupForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const payload = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        password: document.getElementById('password').value
+      };
+
+      try {
+        await apiRequest('/member-service/member/create', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        showMessage('signupMessage', '회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.', 'success');
+        setTimeout(function () {
+          window.location.href = '/login.html';
+        }, 700);
+      } catch (error) {
+        showMessage('signupMessage', '회원가입에 실패했습니다. 이미 가입된 이메일인지 확인해주세요.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
