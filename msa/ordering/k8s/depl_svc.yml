@@ -15,7 +15,7 @@ spec:
         prometheus.io/path: "/actuator/prometheus"
         prometheus.io/port: "8080"
       labels:
-        app: ordering
+        app: ordering 
     spec:
       containers:
       - name: ordering-container
@@ -53,7 +53,7 @@ spec:
           # 확인 반복 주기
           periodSeconds: 10
 
----
+--- 
 apiVersion: v1
 kind: Service
 metadata:
