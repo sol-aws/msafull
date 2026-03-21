@@ -56,11 +56,6 @@ spec:
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 10
-<<<<<<< HEAD
- 
-=======
-
->>>>>>> 305ef1e0ae4ba1690fbb81feb4d9550119c58a83
 ---
 apiVersion: v1
 kind: Service
