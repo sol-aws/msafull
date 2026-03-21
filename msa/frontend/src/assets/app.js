@@ -78,6 +78,23 @@ async function apiRequest(url, options = {}) {
   return response.text();
 }
 
+function getImageUrl(url) {
+  return url || PLACEHOLDER_IMAGE;
+}
+
+function formatPrice(value) {
+  return `${Number(value || 0).toLocaleString()}원`;
+}
+
+function getProductDetailUrl(productId) {
+  return `/product-detail.html?id=${productId}`;
+}
+
+function getQueryParam(name) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
 async function loadProducts() {
   const productList = document.getElementById('productList');
   if (!productList) {
@@ -93,16 +110,16 @@ async function loadProducts() {
 
     productList.innerHTML = products.map(function (product) {
       return `
-        <article class="card">
-          <img src="${product.imageUrl || PLACEHOLDER_IMAGE}" alt="${product.name}">
+        <a class="card card-link" href="${getProductDetailUrl(product.id)}">
+          <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
           <div class="card-body">
             <div class="card-title">${product.name}</div>
             <div class="card-meta">${product.category || '카테고리 없음'}</div>
-            <div class="card-price">${Number(product.price).toLocaleString()}원</div>
+            <div class="card-price">${formatPrice(product.price)}</div>
             <div class="card-meta">재고: ${product.stockQuantity}개</div>
             <div>${product.description || ''}</div>
           </div>
-        </article>
+        </a>
       `;
     }).join('');
   } catch (error) {
@@ -117,4 +134,76 @@ function guardLogin(redirectPath) {
     return false;
   }
   return true;
+}
+
+async function loadProductDetail() {
+  const target = document.getElementById('productDetail');
+  if (!target) {
+    return;
+  }
+
+  const productId = getQueryParam('id');
+  if (!productId) {
+    target.innerHTML = '<div class="empty">상품 정보가 없습니다.</div>';
+    return;
+  }
+
+  try {
+    const product = await apiRequest(`/product-service/product/${productId}`, { method: 'GET', headers: {} });
+    target.innerHTML = `
+      <section class="detail-card">
+        <div class="detail-image-wrap">
+          <img class="detail-image" src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
+        </div>
+        <div class="detail-content">
+          <div class="detail-category">${product.category || '카테고리 없음'}</div>
+          <h1 class="detail-title">${product.name}</h1>
+          <div class="detail-price">${formatPrice(product.price)}</div>
+          <div class="detail-stock" id="detailStock">재고: ${product.stockQuantity}개</div>
+          <p class="detail-description">${product.description || '상품 설명이 없습니다.'}</p>
+          <div class="detail-actions">
+            <button class="btn btn-primary" id="purchaseBtn" type="button" ${product.stockQuantity < 1 ? 'disabled' : ''}>구매하기</button>
+            <a class="btn btn-secondary" href="/">메인으로</a>
+          </div>
+          <div id="purchaseMessage" style="display:none;"></div>
+        </div>
+      </section>
+    `;
+
+    const purchaseBtn = document.getElementById('purchaseBtn');
+    if (purchaseBtn) {
+      purchaseBtn.addEventListener('click', async function () {
+        if (!guardLogin('/login.html')) {
+          return;
+        }
+
+        if (product.stockQuantity < 1) {
+          showMessage('purchaseMessage', '재고가 부족합니다.', 'error');
+          return;
+        }
+
+        purchaseBtn.disabled = true;
+        try {
+          await apiRequest('/product-service/product/updatestock', {
+            method: 'PUT',
+            body: JSON.stringify({
+              productId: product.id,
+              productQuantity: 1
+            })
+          });
+          product.stockQuantity -= 1;
+          document.getElementById('detailStock').textContent = `재고: ${product.stockQuantity}개`;
+          if (product.stockQuantity < 1) {
+            purchaseBtn.disabled = true;
+          }
+          showMessage('purchaseMessage', '구매가 완료되었습니다. 재고가 1개 감소했습니다.', 'success');
+        } catch (error) {
+          purchaseBtn.disabled = false;
+          showMessage('purchaseMessage', error.message || '구매에 실패했습니다.', 'error');
+        }
+      });
+    }
+  } catch (error) {
+    target.innerHTML = '<div class="empty">상품 상세 정보를 불러오지 못했습니다.</div>';
+  }
 }

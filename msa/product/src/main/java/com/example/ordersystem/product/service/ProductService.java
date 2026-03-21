@@ -52,6 +52,9 @@ public class ProductService {
     public Product updateStockQuantity(ProductUpdateStockDto productUpdateStockDto){
         Product product = productRepository.findById(productUpdateStockDto.getProductId())
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
+        if (productUpdateStockDto.getProductQuantity() == null) {
+            throw new IllegalArgumentException("구매 수량이 없습니다.");
+        }
         product.updateStockQuantity(productUpdateStockDto.getProductQuantity());
         return product;
     }

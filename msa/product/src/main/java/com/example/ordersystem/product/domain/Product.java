@@ -37,6 +37,12 @@ public class Product extends BaseTimeEntity {
     private Long memberId;
 
     public void updateStockQuantity(int stockQuantity){
+        if (stockQuantity <= 0) {
+            throw new IllegalArgumentException("구매 수량은 1개 이상이어야 합니다.");
+        }
+        if (this.stockQuantity < stockQuantity) {
+            throw new IllegalArgumentException("재고가 부족합니다.");
+        }
         this.stockQuantity = this.stockQuantity - stockQuantity;
     }
 }
