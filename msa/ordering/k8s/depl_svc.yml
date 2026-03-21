@@ -16,7 +16,7 @@ spec:
         prometheus.io/port: "8080"
       labels:
         app: ordering 
-    spec:
+    spec: 
       containers:
       - name: ordering-container
         image: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com/member-service:latest
