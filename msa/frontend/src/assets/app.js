@@ -64,6 +64,22 @@ function showMessage(targetId, message, type) {
   target.style.display = 'block';
 }
 
+function extractErrorMessage(text) {
+  if (!text) {
+    return '요청 처리 중 오류가 발생했습니다.';
+  }
+
+  if (text.includes('504 Gateway Time-out') || text.includes('504 Gateway Timeout')) {
+    return '구매 요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
+  }
+
+  if (text.includes('<html') || text.includes('<!DOCTYPE') || text.includes('<body')) {
+    return '서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+  }
+
+  return text;
+}
+
 async function apiRequest(url, options = {}) {
   const headers = options.headers || {};
   const token = getToken();
@@ -81,7 +97,7 @@ async function apiRequest(url, options = {}) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || '요청 처리 중 오류가 발생했습니다.');
+    throw new Error(extractErrorMessage(text));
   }
 
   const contentType = response.headers.get('content-type') || '';
@@ -203,20 +219,19 @@ async function loadProductDetail() {
           return;
         }
 
+        const originalText = purchaseBtn.textContent;
         purchaseBtn.disabled = true;
+        purchaseBtn.textContent = '구매 처리중...';
         try {
-          await apiRequest('/ordering-service/ordering/create', {
-            method: 'POST',
-            body: JSON.stringify({
-              productId: product.id,
-              productCount: 1
-            })
+          await apiRequest(`/product-service/product/${product.id}/purchase`, {
+            method: 'POST'
           });
           alert('구매되었습니다.');
           window.location.href = '/';
         } catch (error) {
           purchaseBtn.disabled = false;
-          showMessage('purchaseMessage', error.message || '구매에 실패했습니다.', 'error');
+          purchaseBtn.textContent = originalText;
+          showMessage('purchaseMessage', error.message || '구매 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
         }
       });
     }

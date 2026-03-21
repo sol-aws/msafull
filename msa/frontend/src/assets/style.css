@@ -101,3 +101,5 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   .hero-copy h1, .auth-visual h1 { font-size: 34px; }
   .detail-card { grid-template-columns: 1fr; }
 }
+
+.detail-actions + #purchaseMessage, #purchaseMessage { margin-top: 16px; max-width: 760px; word-break: keep-all; }
