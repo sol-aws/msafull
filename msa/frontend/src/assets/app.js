@@ -184,19 +184,11 @@ async function loadProductDetail() {
 
         purchaseBtn.disabled = true;
         try {
-          await apiRequest('/product-service/product/updatestock', {
-            method: 'PUT',
-            body: JSON.stringify({
-              productId: product.id,
-              productQuantity: 1
-            })
+          await apiRequest(`/product-service/product/${product.id}/purchase`, {
+            method: 'POST'
           });
-          product.stockQuantity -= 1;
-          document.getElementById('detailStock').textContent = `재고: ${product.stockQuantity}개`;
-          if (product.stockQuantity < 1) {
-            purchaseBtn.disabled = true;
-          }
-          showMessage('purchaseMessage', '구매가 완료되었습니다. 재고가 1개 감소했습니다.', 'success');
+          alert('구매되었습니다.');
+          window.location.href = '/';
         } catch (error) {
           purchaseBtn.disabled = false;
           showMessage('purchaseMessage', error.message || '구매에 실패했습니다.', 'error');

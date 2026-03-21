@@ -45,4 +45,10 @@ public class ProductController {
         Product product = productService.updateStockQuantity(productUpdateStockDto);
         return new ResponseEntity<>(product.getId(), HttpStatus.OK);
     }
+
+    @PostMapping("/{id}/purchase")
+    public ResponseEntity<?> purchaseProduct(@PathVariable Long id){
+        Product product = productService.purchaseProduct(id);
+        return new ResponseEntity<>(product.getId(), HttpStatus.OK);
+    }
 }

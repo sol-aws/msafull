@@ -59,6 +59,13 @@ public class ProductService {
         return product;
     }
 
+    public Product purchaseProduct(Long id){
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
+        product.updateStockQuantity(1);
+        return product;
+    }
+
     @KafkaListener(topics = "update-stock-topic", containerFactory = "kafkaListener")
     public void stockConsumer(String message){
         ObjectMapper objectMapper = new ObjectMapper();
