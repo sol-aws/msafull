@@ -32,6 +32,10 @@ spring:
       #      카프카내에 들어와있는 메시지중에 처음들어와있는 메시지부터 읽기시작(latest: 현시점이후로 들어오는 메시지만 read)
       auto-offset-reset: earliest
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 305ef1e0ae4ba1690fbb81feb4d9550119c58a83
 cloud:
   aws:
     credentials:
