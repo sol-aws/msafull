@@ -1,5 +1,5 @@
 const API_BASE = '';
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80';
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80';
 
 function saveAuth(data) {
   localStorage.setItem('auth', JSON.stringify(data));
@@ -19,17 +19,30 @@ function getToken() {
   return auth ? auth.token : null;
 }
 
+function toggleAuthMenus(isLoggedIn) {
+  document.querySelectorAll('.auth-guest').forEach(function (element) {
+    element.style.display = isLoggedIn ? 'none' : '';
+  });
+  document.querySelectorAll('.auth-user').forEach(function (element) {
+    element.style.display = isLoggedIn ? '' : 'none';
+  });
+}
+
 function renderHeader() {
   const auth = getAuth();
   const userBox = document.getElementById('userBox');
+  toggleAuthMenus(!!auth);
+
   if (!userBox) {
     return;
   }
 
   if (auth) {
     userBox.innerHTML = `
-      <span>${auth.name || auth.email}님</span>
-      <button class="btn btn-danger" id="logoutBtn" type="button">로그아웃</button>
+      <div class="user-pill">
+        <span class="user-name">${auth.nickname || auth.name || auth.loginId || auth.email}님</span>
+        <button class="btn btn-danger btn-sm" id="logoutBtn" type="button">로그아웃</button>
+      </div>
     `;
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function () {
@@ -37,7 +50,7 @@ function renderHeader() {
       window.location.href = '/';
     });
   } else {
-    userBox.innerHTML = '<span>비회원 상태</span>';
+    userBox.innerHTML = '';
   }
 }
 
@@ -116,16 +129,18 @@ async function loadProducts() {
 
     productList.innerHTML = products.map(function (product) {
       return `
-        <div class="card card-link" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
-          <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
-          <div class="card-body">
-            <div class="card-title">${product.name}</div>
-            <div class="card-meta">${product.category || '카테고리 없음'}</div>
-            <div class="card-price">${formatPrice(product.price)}</div>
-            <div class="card-meta">재고: ${product.stockQuantity}개</div>
-            <div>${product.description || ''}</div>
+        <article class="product-card" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
+          <div class="product-image-wrap">
+            <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
           </div>
-        </div>
+          <div class="product-body">
+            <div class="product-brand">${product.category || '추천 상품'}</div>
+            <div class="product-title">${product.name}</div>
+            <div class="product-price">${formatPrice(product.price)}</div>
+            <div class="product-stock">재고 ${product.stockQuantity}개</div>
+            <div class="product-description">${product.description || '상품 상세 페이지에서 자세한 설명을 확인하세요.'}</div>
+          </div>
+        </article>
       `;
     }).join('');
   } catch (error) {

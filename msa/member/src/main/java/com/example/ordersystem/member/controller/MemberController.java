@@ -56,6 +56,8 @@ public class MemberController {
         Map<String, Object> loginInfo = new HashMap<>();
         loginInfo.put("id", member.getId());
         loginInfo.put("name", member.getName());
+        loginInfo.put("loginId", member.getLoginId());
+        loginInfo.put("nickname", member.getNickname());
         loginInfo.put("email", member.getEmail());
         loginInfo.put("role", member.getRole());
         loginInfo.put("token", token);
@@ -78,8 +80,8 @@ public class MemberController {
         }
 
         String token = jwtTokenProvider.createToken(claims.getSubject(), claims.get("role").toString());
-        Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("token", token);
-        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
