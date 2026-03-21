@@ -21,7 +21,8 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      # ddl-auto: update
+      ddl-auto: create
     show_sql: true
   kafka:
     kafka-server: kafka-service:9092
