@@ -90,6 +90,12 @@ function getProductDetailUrl(productId) {
   return `/product-detail.html?id=${productId}`;
 }
 
+function goToProductDetail(productId) {
+  window.location.href = getProductDetailUrl(productId);
+}
+
+window.goToProductDetail = goToProductDetail;
+
 function getQueryParam(name) {
   const params = new URLSearchParams(window.location.search);
   return params.get(name);
@@ -110,7 +116,7 @@ async function loadProducts() {
 
     productList.innerHTML = products.map(function (product) {
       return `
-        <a class="card card-link" href="${getProductDetailUrl(product.id)}">
+        <div class="card card-link" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
           <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
           <div class="card-body">
             <div class="card-title">${product.name}</div>
@@ -119,7 +125,7 @@ async function loadProducts() {
             <div class="card-meta">재고: ${product.stockQuantity}개</div>
             <div>${product.description || ''}</div>
           </div>
-        </a>
+        </div>
       `;
     }).join('');
   } catch (error) {
