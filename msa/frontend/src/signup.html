@@ -76,7 +76,7 @@
           window.location.href = '/login.html';
         }, 500);
       } catch (error) {
-        showMessage('signupMessage', '이미 존재하는 아이디 또는 이메일입니다.', 'error');
+        showMessage('signupMessage', error.message || '회원가입에 실패했습니다.', 'error');
       }
     });
   </script>
