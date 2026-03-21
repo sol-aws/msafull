@@ -20,7 +20,7 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
     generate-ddl: true
-    hibernate: 
+    hibernate:
       ddl-auto: update
     show_sql: true
   kafka:
