@@ -1,7 +1,6 @@
 package com.example.ordersystem.product.service;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +27,6 @@ public class S3Service {
         metadata.setContentType(file.getContentType());
 
         amazonS3.putObject(bucket, fileName, file.getInputStream(), metadata);
-        amazonS3.setObjectAcl(bucket, fileName, CannedAccessControlList.PublicRead);
 
         return amazonS3.getUrl(bucket, fileName).toString();
     }
