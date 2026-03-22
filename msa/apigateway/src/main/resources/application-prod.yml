@@ -38,7 +38,7 @@ spring:
             # 첫번째 경로(/member-service)를 제거
             # 예:/member-service/member/doLogin  -->   /member/doLogin 으로 변환
             - StripPrefix=1
-          uri: http://member-service.soldesk.svc.cluster.local    # K8s 내부 서비스명
+          uri: http://member-service    # K8s 내부 서비스명
 
         # ORDERING 서비스
         # 외부:https://server.aws-esk.com/ordering-service/...
@@ -47,7 +47,7 @@ spring:
             - Path=/ordering-service/**
           filters:
             - StripPrefix=1
-          uri: http://ordering-service.soldesk.svc.cluster.local
+          uri: http://ordering-service
 
         # PRODUCT 서비스
         # 외부:https://server.aws-esk.com/product-service/...
@@ -56,7 +56,7 @@ spring:
             - Path=/product-service/**
           filters:
             - StripPrefix=1
-          uri: http://product-service.soldesk.svc.cluster.local
+          uri: http://product-service
 
 jwt:
   secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5
