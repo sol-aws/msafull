@@ -9,6 +9,7 @@ import org.springframework.web.client.RestTemplate;
 public class RestTemplateConfig {
 
     @Bean
+//    eureka에 등록된 서비스명을 사용해서 내부서비스 호출(내부통신)
     public RestTemplate restTemplate(){
         return new RestTemplate();
     }
