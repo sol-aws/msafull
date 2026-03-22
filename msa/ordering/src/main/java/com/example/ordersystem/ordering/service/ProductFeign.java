@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 //name은 eureka에 등록된 호출할 서비스의 이름
 //url은 k8s에서 service명
-@FeignClient(name = "product-client", url="http://product-service")
+@FeignClient(name = "product-client", url="http://product-service.soldesk.svc.cluster.local")
 public interface ProductFeign {
 
     @GetMapping("/product/{productId}")

@@ -25,7 +25,7 @@ public class OrderingService {
     public Ordering orderCreate(OrderCreateDto orderDto, String userId) {
 
         // 1. 상품 조회
-        String getUrl = "http://product-service/product/" + orderDto.getProductId();
+        String getUrl = "http://product-service.soldesk.svc.cluster.local/product/" + orderDto.getProductId();
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("X-User-Id", userId);
@@ -48,7 +48,7 @@ public class OrderingService {
         }
 
         // 2. 재고 차감
-        String updateUrl = "http://product-service/product/updatestock";
+        String updateUrl = "http://product-service.soldesk.svc.cluster.local/product/updatestock";
 
         headers.setContentType(MediaType.APPLICATION_JSON);
 
