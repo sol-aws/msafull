@@ -72,6 +72,8 @@ jobs:
               - 'msa/product/**'
             frontend:
               - 'msa/frontend/**'
+            k8s:
+              - 'msa/k8s/**'
 
       # 변경 없으면 종료
       - name: stop if no service changed
@@ -82,7 +84,8 @@ jobs:
           steps.changes.outputs.member != 'true' &&
           steps.changes.outputs.ordering != 'true' &&
           steps.changes.outputs.product != 'true' &&
-          steps.changes.outputs.frontend != 'true'
+          steps.changes.outputs.frontend != 'true' &&
+          steps.changes.outputs.k8s != 'true'
         run: |
           echo "No service directory changed. Skip build & deploy."
           exit 0
@@ -186,3 +189,12 @@ jobs:
           kubectl apply -f ./msa/frontend/k8s/depl_svc.yml
           kubectl rollout restart deployment frontend-depl -n soldesk
 
+
+
+      - name: deploy ingress and shared k8s resources
+        if: steps.changes.outputs.k8s == 'true'
+        run: |
+          kubectl apply -f ./msa/k8s/k8s-services/ingress.yml
+          kubectl apply -f ./msa/k8s/k8s-services/ingress_without_gateway.yml
+          kubectl apply -f ./msa/k8s/k8s-services/https.yml
+          kubectl apply -f ./msa/k8s/k8s-services/redis.yml
