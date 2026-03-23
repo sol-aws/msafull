@@ -1,5 +1,6 @@
 package com.example.ordersystem.product.service;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.example.ordersystem.product.domain.Product;
@@ -7,6 +8,7 @@ import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +20,7 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
     private final AmazonS3 amazonS3;
@@ -31,7 +34,11 @@ public class ProductService {
     }
 
     public Product productCreate(ProductRegisterDto dto, MultipartFile image, String userId){
+        log.info("productCreate start. name={}, category={}, userId={}, imageSize={}",
+                dto.getName(), dto.getCategory(), userId, image == null ? 0 : image.getSize());
+
         String imageUrl = uploadImage(image);
+
         Product product = Product.builder()
                 .name(dto.getName())
                 .description(dto.getDescription())
@@ -41,7 +48,10 @@ public class ProductService {
                 .imageUrl(imageUrl)
                 .memberId(Long.parseLong(userId))
                 .build();
-        return productRepository.save(product);
+
+        Product saved = productRepository.save(product);
+        log.info("productCreate success. productId={}", saved.getId());
+        return saved;
     }
 
     public List<ProductResDto> productList(){
@@ -81,17 +91,26 @@ public class ProductService {
         }
         try {
             String originalName = image.getOriginalFilename() == null ? "product-image" : image.getOriginalFilename();
-            String safeName = originalName.replaceAll("\s+", "-");
-            String key = "products/" + UUID.randomUUID() + "-" + safeName;
+            String key = "products/" + UUID.randomUUID() + "-" + originalName.replaceAll("\s+", "-");
+
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(image.getSize());
             metadata.setContentType(image.getContentType());
+
+            log.info("S3 upload start. bucket={}, key={}, size={}", bucket, key, image.getSize());
             amazonS3.putObject(bucket, key, image.getInputStream(), metadata);
-            return amazonS3.getUrl(bucket, key).toString();
+            String imageUrl = amazonS3.getUrl(bucket, key).toString();
+            log.info("S3 upload success. imageUrl={}", imageUrl);
+            return imageUrl;
         } catch (IOException e) {
-            throw new IllegalStateException("이미지 파일 읽기에 실패했습니다.", e);
+            log.error("이미지 파일 읽기 실패", e);
+            throw new IllegalArgumentException("이미지 파일 읽기에 실패했습니다: " + e.getMessage(), e);
+        } catch (AmazonClientException e) {
+            log.error("S3 업로드 실패", e);
+            throw new IllegalArgumentException("S3 업로드에 실패했습니다: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new IllegalStateException("S3 업로드에 실패했습니다: " + e.getMessage(), e);
+            log.error("상품 이미지 업로드 중 알 수 없는 오류", e);
+            throw new IllegalArgumentException("상품 이미지 업로드 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
 }

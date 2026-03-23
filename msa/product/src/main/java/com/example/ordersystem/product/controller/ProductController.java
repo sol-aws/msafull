@@ -5,6 +5,7 @@ import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.dto.ProductUpdateStockDto;
 import com.example.ordersystem.product.service.ProductService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/product")
+@Slf4j
 public class ProductController {
     private final ProductService productService;
 
@@ -27,12 +29,13 @@ public class ProductController {
     public ResponseEntity<Map<String, Object>> productCreate(@ModelAttribute ProductRegisterDto dto,
                                                              @RequestPart("image") MultipartFile image,
                                                              @RequestHeader("X-User-Id") String userId){
+        log.info("POST /product/create called. userId={}", userId);
         Product product = productService.productCreate(dto, image, userId);
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("message", "success");
-        body.put("productId", product.getId());
-        body.put("imageUrl", product.getImageUrl());
-        return new ResponseEntity<>(body, HttpStatus.CREATED);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("message", "상품등록 성공");
+        result.put("productId", product.getId());
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @GetMapping("/list")
