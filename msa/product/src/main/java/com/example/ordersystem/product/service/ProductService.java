@@ -81,14 +81,17 @@ public class ProductService {
         }
         try {
             String originalName = image.getOriginalFilename() == null ? "product-image" : image.getOriginalFilename();
-            String key = "products/" + UUID.randomUUID() + "-" + originalName.replaceAll("\s+", "-");
+            String safeName = originalName.replaceAll("\s+", "-");
+            String key = "products/" + UUID.randomUUID() + "-" + safeName;
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(image.getSize());
             metadata.setContentType(image.getContentType());
             amazonS3.putObject(bucket, key, image.getInputStream(), metadata);
             return amazonS3.getUrl(bucket, key).toString();
         } catch (IOException e) {
-            throw new IllegalArgumentException("이미지 업로드에 실패했습니다.");
+            throw new IllegalStateException("이미지 파일 읽기에 실패했습니다.", e);
+        } catch (Exception e) {
+            throw new IllegalStateException("S3 업로드에 실패했습니다: " + e.getMessage(), e);
         }
     }
 }
