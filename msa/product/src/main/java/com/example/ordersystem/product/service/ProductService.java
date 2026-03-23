@@ -1,8 +1,5 @@
 package com.example.ordersystem.product.service;
 
-import com.amazonaws.AmazonClientException;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.example.ordersystem.product.domain.Product;
 import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
@@ -10,11 +7,19 @@ import com.example.ordersystem.product.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,21 +28,19 @@ import java.util.UUID;
 @Slf4j
 public class ProductService {
     private final ProductRepository productRepository;
-    private final AmazonS3 amazonS3;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
+    @Value("${app.upload-dir:/app/uploads}")
+    private String uploadDir;
 
-    public ProductService(ProductRepository productRepository, AmazonS3 amazonS3) {
+    public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
-        this.amazonS3 = amazonS3;
     }
 
     public Product productCreate(ProductRegisterDto dto, MultipartFile image, String userId){
         log.info("productCreate start. name={}, category={}, userId={}, imageSize={}",
                 dto.getName(), dto.getCategory(), userId, image == null ? 0 : image.getSize());
 
-        String imageUrl = uploadImage(image);
+        String imageUrl = saveImage(image);
 
         Product product = Product.builder()
                 .name(dto.getName())
@@ -73,6 +76,20 @@ public class ProductService {
         return product;
     }
 
+    public Resource loadImageAsResource(String fileName) {
+        try {
+            Path uploadPath = getUploadPath();
+            Path filePath = uploadPath.resolve(fileName).normalize();
+            Resource resource = new UrlResource(filePath.toUri());
+            if (!resource.exists() || !resource.isReadable()) {
+                throw new EntityNotFoundException("이미지를 찾을 수 없습니다.");
+            }
+            return resource;
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("이미지 경로가 올바르지 않습니다.", e);
+        }
+    }
+
     private ProductResDto toDto(Product product) {
         return ProductResDto.builder()
                 .id(product.getId())
@@ -85,32 +102,33 @@ public class ProductService {
                 .build();
     }
 
-    private String uploadImage(MultipartFile image) {
+    private String saveImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             throw new IllegalArgumentException("상품 이미지는 필수입니다.");
         }
         try {
-            String originalName = image.getOriginalFilename() == null ? "product-image" : image.getOriginalFilename();
-            String key = "products/" + UUID.randomUUID() + "-" + originalName.replaceAll("\s+", "-");
+            Path uploadPath = getUploadPath();
+            Files.createDirectories(uploadPath);
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(image.getSize());
-            metadata.setContentType(image.getContentType());
+            String originalName = StringUtils.cleanPath(image.getOriginalFilename() == null ? "product-image" : image.getOriginalFilename());
+            String extension = "";
+            int index = originalName.lastIndexOf('.');
+            if (index >= 0) {
+                extension = originalName.substring(index);
+            }
+            String fileName = UUID.randomUUID() + extension;
+            Path targetPath = uploadPath.resolve(fileName);
 
-            log.info("S3 upload start. bucket={}, key={}, size={}", bucket, key, image.getSize());
-            amazonS3.putObject(bucket, key, image.getInputStream(), metadata);
-            String imageUrl = amazonS3.getUrl(bucket, key).toString();
-            log.info("S3 upload success. imageUrl={}", imageUrl);
-            return imageUrl;
+            Files.copy(image.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+            log.info("local image save success. path={}", targetPath);
+            return "/product/images/" + fileName;
         } catch (IOException e) {
-            log.error("이미지 파일 읽기 실패", e);
-            throw new IllegalArgumentException("이미지 파일 읽기에 실패했습니다: " + e.getMessage(), e);
-        } catch (AmazonClientException e) {
-            log.error("S3 업로드 실패", e);
-            throw new IllegalArgumentException("S3 업로드에 실패했습니다: " + e.getMessage(), e);
-        } catch (Exception e) {
-            log.error("상품 이미지 업로드 중 알 수 없는 오류", e);
-            throw new IllegalArgumentException("상품 이미지 업로드 중 오류가 발생했습니다: " + e.getMessage(), e);
+            log.error("로컬 이미지 저장 실패", e);
+            throw new IllegalArgumentException("이미지 저장에 실패했습니다: " + e.getMessage(), e);
         }
+    }
+
+    private Path getUploadPath() {
+        return Paths.get(uploadDir).toAbsolutePath().normalize();
     }
 }

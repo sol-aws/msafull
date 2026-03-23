@@ -42,26 +42,8 @@ spec:
             secretKeyRef:
               name: my-app-secrets
               key: DB_PW
-        - name: AWS_ACCESS_KEY
-          valueFrom:
-            secretKeyRef:
-              name: aws-secret
-              key: AWS_ACCESS_KEY
-        - name: AWS_SECRET_KEY
-          valueFrom:
-            secretKeyRef:
-              name: aws-secret
-              key: AWS_SECRET_KEY
-        - name: AWS_REGION
-          valueFrom:
-            secretKeyRef:
-              name: aws-secret
-              key: AWS_REGION
-        - name: S3_BUCKET
-          valueFrom:
-            secretKeyRef:
-              name: aws-secret
-              key: S3_BUCKET
+        - name: APP_UPLOAD_DIR
+          value: /app/uploads
         # 컨테이너 상태 확인 
         readinessProbe:
           httpGet:

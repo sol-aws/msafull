@@ -33,12 +33,5 @@ spring:
       max-file-size: 20MB
       max-request-size: 20MB
 
-cloud:
-  aws:
-    credentials:
-      access-key: ${AWS_ACCESS_KEY}
-      secret-key: ${AWS_SECRET_KEY}
-    region:
-      static: ${AWS_REGION:ap-northeast-2}
-    s3:
-      bucket: ${S3_BUCKET}
+app:
+  upload-dir: ${APP_UPLOAD_DIR:/app/uploads}
