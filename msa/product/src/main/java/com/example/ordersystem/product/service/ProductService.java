@@ -18,8 +18,6 @@ import java.util.List;
 @Service
 @Transactional
 public class ProductService {
-    private static final String DEFAULT_PRODUCT_IMAGE_URL = "https://via.placeholder.com/600x600?text=No+Image";
-
     private final ProductRepository productRepository;
     private final S3Service s3Service;
 
@@ -29,15 +27,11 @@ public class ProductService {
     }
 
     public Product productCreate(ProductRegisterDto dto, String userId) throws IOException {
-        Long memberId;
-        try {
-            memberId = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("로그인 사용자 정보가 올바르지 않습니다. 다시 로그인해주세요.");
+        String finalImageUrl = dto.getImageUrl();
+        if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
+            finalImageUrl = s3Service.uploadFile(dto.getImageFile());
         }
-
-        String finalImageUrl = resolveImageUrl(dto);
-        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
+        return productRepository.save(dto.toEntity(Long.parseLong(userId), finalImageUrl));
     }
 
     @Transactional(readOnly = true)
@@ -81,26 +75,6 @@ public class ProductService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String resolveImageUrl(ProductRegisterDto dto) throws IOException {
-        String finalImageUrl = dto.getImageUrl();
-
-        if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
-            try {
-                return s3Service.uploadFile(dto.getImageFile());
-            } catch (Exception e) {
-                if (finalImageUrl != null && !finalImageUrl.isBlank()) {
-                    return finalImageUrl;
-                }
-                return DEFAULT_PRODUCT_IMAGE_URL;
-            }
-        }
-
-        if (finalImageUrl == null || finalImageUrl.isBlank()) {
-            return DEFAULT_PRODUCT_IMAGE_URL;
-        }
-        return finalImageUrl;
     }
 
     private ProductResDto toDto(Product product){

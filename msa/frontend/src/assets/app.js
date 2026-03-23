@@ -223,12 +223,8 @@ async function loadProductDetail() {
         purchaseBtn.disabled = true;
         purchaseBtn.textContent = '구매 처리중...';
         try {
-          await apiRequest('/ordering-service/ordering/create', {
-            method: 'POST',
-            body: JSON.stringify({
-              productId: product.id,
-              productCount: 1
-            })
+          await apiRequest(`/product-service/product/${product.id}/purchase`, {
+            method: 'POST'
           });
           alert('구매되었습니다.');
           window.location.href = '/';
