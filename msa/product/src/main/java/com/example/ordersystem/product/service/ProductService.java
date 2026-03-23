@@ -24,29 +24,18 @@ public class ProductService {
     }
 
     public Product productCreate(ProductRegisterDto dto, String userId) throws IOException {
+        Long memberId = parseUserIdOrDefault(userId);
         String finalImageUrl = dto.getImageUrl();
 
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {
                 finalImageUrl = s3Service.uploadFile(dto.getImageFile());
             } catch (Exception e) {
-                System.out.println("S3 upload failed, continuing without image upload: " + e.getMessage());
+                System.out.println("S3 upload skipped: " + e.getMessage());
             }
         }
 
-        Long memberId = parseUserId(userId);
         return productRepository.save(dto.toEntity(memberId, finalImageUrl));
-    }
-
-    private Long parseUserId(String userId) {
-        try {
-            if (userId == null || userId.isBlank()) {
-                return 1L;
-            }
-            return Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            return 1L;
-        }
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +68,17 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
         product.updateStockQuantity(1);
         return product;
+    }
+
+    private Long parseUserIdOrDefault(String userId) {
+        if (userId == null || userId.isBlank()) {
+            return 1L;
+        }
+        try {
+            return Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            return 1L;
+        }
     }
 
     private ProductResDto toDto(Product product){

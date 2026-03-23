@@ -1,7 +1,9 @@
 package com.example.ordersystem.common.config;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,20 +24,27 @@ public class S3Config {
 
     @Bean
     public AmazonS3 amazonS3() {
-        AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
-                .withRegion(region);
+        AWSCredentialsProvider credentialsProvider;
 
-        if (hasText(accessKey) && hasText(secretKey)
-                && !"YOUR_ACCESS_KEY".equals(accessKey)
-                && !"YOUR_SECRET_KEY".equals(secretKey)) {
+        if (isBlankOrPlaceholder(accessKey) || isBlankOrPlaceholder(secretKey)) {
+            credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
+        } else {
             BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-            builder.withCredentials(new AWSStaticCredentialsProvider(credentials));
+            credentialsProvider = new AWSStaticCredentialsProvider(credentials);
         }
 
-        return builder.build();
+        return AmazonS3ClientBuilder.standard()
+                .withRegion(region)
+                .withCredentials(credentialsProvider)
+                .build();
     }
 
-    private boolean hasText(String value) {
-        return value != null && !value.isBlank();
+    private boolean isBlankOrPlaceholder(String value) {
+        return value == null
+                || value.isBlank()
+                || "YOUR_ACCESS_KEY".equalsIgnoreCase(value)
+                || "YOUR_SECRET_KEY".equalsIgnoreCase(value)
+                || "${AWS_ACCESS_KEY_ID}".equals(value)
+                || "${AWS_SECRET_ACCESS_KEY}".equals(value);
     }
 }

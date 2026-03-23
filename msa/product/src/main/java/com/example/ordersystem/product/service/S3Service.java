@@ -16,14 +16,10 @@ public class S3Service {
 
     private final AmazonS3 amazonS3;
 
-    @Value("${cloud.aws.s3.bucket:}")
+    @Value("${cloud.aws.s3.bucket}")
     private String bucket;
 
     public String uploadFile(MultipartFile file) throws IOException {
-        if (bucket == null || bucket.isBlank()) {
-            throw new IllegalStateException("S3 bucket 설정이 없습니다.");
-        }
-
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();
