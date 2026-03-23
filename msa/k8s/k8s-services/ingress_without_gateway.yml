@@ -6,42 +6,34 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: my-issuer
-    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1 #첫번쨰 prefix제거
 spec:
-  ingressClassName: nginx
   tls:
   - hosts:
     - "server.aws-esk.com"
     secretName: server-aws-esk-com-tls
   rules:
-  - host: server.aws-esk.com
+  - host: server.aws-esk.com  # 설정하려는 도메인 이름. 제외시에 elb주소로도 접근할수 있는 모든 도메인 접근 가능.
     http:
       paths:
-      - path: /member-service
+      - path: /member-service/ #모든 url요청을 nginx-service로 라우팅
         pathType: Prefix
         backend:
           service:
-            name: apigateway-service
+            name: member-service
             port:
               number: 80
-      - path: /product-service
+      - path: /ordering-service/ #모든 url요청을 nginx-service로 라우팅
         pathType: Prefix
         backend:
           service:
-            name: apigateway-service
+            name: ordering-service
             port:
               number: 80
-      - path: /ordering-service
+      - path: /product-service/ #모든 url요청을 nginx-service로 라우팅
         pathType: Prefix
         backend:
           service:
-            name: apigateway-service
-            port:
-              number: 80
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
+            name: product-service
             port:
               number: 80

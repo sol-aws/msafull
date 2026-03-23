@@ -25,4 +25,3 @@ spring:
     show_sql: true
   kafka:
     kafka-server: kafka-service:9092
-    

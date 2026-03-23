@@ -35,19 +35,19 @@ spring:
         - id: member-direct
           predicates:
             - Path=/member/**
-          uri: http://member-service.soldesk.svc.cluster.local
+          uri: http://member-service
 
 
         - id: ordering-direct
           predicates:
             - Path=/ordering/**
-          uri: http://ordering-service.soldesk.svc.cluster.local
+          uri: http://ordering-service
 
 
         - id: product-direct
           predicates:
             - Path=/product/**
-          uri: http://product-service.soldesk.svc.cluster.local
+          uri: http://product-service
 
         - id: frontend-direct
           predicates:
@@ -63,7 +63,7 @@ spring:
             - Path=/member-service/**
           filters:
             - StripPrefix=1   # 첫 번째 경로(prefix) 제거
-          uri: http://member-service.soldesk.svc.cluster.local
+          uri: http://member-service
 
 
         - id: ordering-service
@@ -71,7 +71,7 @@ spring:
             - Path=/ordering-service/**
           filters:
             - StripPrefix=1
-          uri: http://ordering-service.soldesk.svc.cluster.local
+          uri: http://ordering-service
 
 
         - id: product-service
@@ -79,7 +79,7 @@ spring:
             - Path=/product-service/**
           filters:
             - StripPrefix=1
-          uri: http://product-service.soldesk.svc.cluster.local
+          uri: http://product-service
 
         - id: frontend-service
           predicates:
