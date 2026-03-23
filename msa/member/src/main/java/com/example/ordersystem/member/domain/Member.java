@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,14 +18,7 @@ public class Member extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
-
-    @Column(nullable = false, unique = true)
-    private String loginId;
-
-    @Column(nullable = false)
-    private String nickname;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -35,4 +29,6 @@ public class Member extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.USER;
+
+
 }

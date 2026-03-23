@@ -4,28 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품등록</title>
-  <link rel="stylesheet" href="/assets/style.css?v=20260322b">
+  <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
-  <!-- FIX_VERSION_20260322_V3 -->
-  <header class="shop-header">
-    <div class="topbar">
-      <div class="container topbar-inner">
-        <a href="/" class="brand brand-large">Soldesk Market</a>
-        <form class="search-box" onsubmit="return false;">
-          <input type="text" placeholder="갤럭시, 노트북, 이어폰 등 원하는 상품을 검색해보세요">
-        </form>
-        <nav class="header-actions">
-          <a class="header-link" href="/">메인</a>
-          <a class="header-link auth-guest" href="/login.html">로그인</a>
-          <a class="header-link auth-guest" href="/signup.html">회원가입</a>
-          <a class="header-link auth-user" href="/product-create.html">상품등록</a>
-          <div id="userBox" class="user-box"></div>
-        </nav>
-      </div>
+  <header class="header">
+    <div class="container">
+      <a href="/" class="brand">Soldesk Mall</a>
+      <nav class="nav">
+        <a class="btn btn-secondary" href="/">메인</a>
+        <a class="btn btn-secondary" href="/login.html">로그인</a>
+        <a class="btn btn-secondary" href="/signup.html">회원가입</a>
+        <div id="userBox" class="btn btn-secondary"></div>
+      </nav>
     </div>
   </header>
-
 
   <section class="form-wrap">
     <h2>상품등록</h2>
@@ -59,7 +51,7 @@
     </form>
   </section>
 
-  <script src="/assets/app.js?v=20260322b"></script>
+  <script src="/assets/app.js"></script>
   <script>
     renderHeader();
     guardLogin('/login.html');

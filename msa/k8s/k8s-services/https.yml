@@ -16,7 +16,6 @@ spec:
     - http01:
         ingress:
           class: nginx
-          
 ---
 # 3.ClusterIssue를 사용하여 Certificate 리소스 생성 : Certificate리소스 생성시에 인증서 발급
 apiVersion: cert-manager.io/v1

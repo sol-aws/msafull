@@ -1,5 +1,5 @@
 const API_BASE = '';
-const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80';
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=900&q=80';
 
 function saveAuth(data) {
   localStorage.setItem('auth', JSON.stringify(data));
@@ -19,30 +19,17 @@ function getToken() {
   return auth ? auth.token : null;
 }
 
-function toggleAuthMenus(isLoggedIn) {
-  document.querySelectorAll('.auth-guest').forEach(function (element) {
-    element.style.display = isLoggedIn ? 'none' : '';
-  });
-  document.querySelectorAll('.auth-user').forEach(function (element) {
-    element.style.display = isLoggedIn ? '' : 'none';
-  });
-}
-
 function renderHeader() {
   const auth = getAuth();
   const userBox = document.getElementById('userBox');
-  toggleAuthMenus(!!auth);
-
   if (!userBox) {
     return;
   }
 
   if (auth) {
     userBox.innerHTML = `
-      <div class="user-pill">
-        <span class="user-name">${auth.nickname || auth.name || auth.loginId || auth.email}님</span>
-        <button class="btn btn-danger btn-sm" id="logoutBtn" type="button">로그아웃</button>
-      </div>
+      <span>${auth.name || auth.email}님</span>
+      <button class="btn btn-danger" id="logoutBtn" type="button">로그아웃</button>
     `;
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function () {
@@ -50,7 +37,7 @@ function renderHeader() {
       window.location.href = '/';
     });
   } else {
-    userBox.innerHTML = '';
+    userBox.innerHTML = '<span>비회원 상태</span>';
   }
 }
 
@@ -62,22 +49,6 @@ function showMessage(targetId, message, type) {
   target.className = `message ${type}`;
   target.textContent = message;
   target.style.display = 'block';
-}
-
-function extractErrorMessage(text) {
-  if (!text) {
-    return '요청 처리 중 오류가 발생했습니다.';
-  }
-
-  if (text.includes('504 Gateway Time-out') || text.includes('504 Gateway Timeout')) {
-    return '구매 요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
-  }
-
-  if (text.includes('<html') || text.includes('<!DOCTYPE') || text.includes('<body')) {
-    return '서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-  }
-
-  return text;
 }
 
 async function apiRequest(url, options = {}) {
@@ -97,7 +68,7 @@ async function apiRequest(url, options = {}) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(extractErrorMessage(text));
+    throw new Error(text || '요청 처리 중 오류가 발생했습니다.');
   }
 
   const contentType = response.headers.get('content-type') || '';
@@ -145,18 +116,16 @@ async function loadProducts() {
 
     productList.innerHTML = products.map(function (product) {
       return `
-        <article class="product-card" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
-          <div class="product-image-wrap">
-            <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
+        <div class="card card-link" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
+          <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
+          <div class="card-body">
+            <div class="card-title">${product.name}</div>
+            <div class="card-meta">${product.category || '카테고리 없음'}</div>
+            <div class="card-price">${formatPrice(product.price)}</div>
+            <div class="card-meta">재고: ${product.stockQuantity}개</div>
+            <div>${product.description || ''}</div>
           </div>
-          <div class="product-body">
-            <div class="product-brand">${product.category || '추천 상품'}</div>
-            <div class="product-title">${product.name}</div>
-            <div class="product-price">${formatPrice(product.price)}</div>
-            <div class="product-stock">재고 ${product.stockQuantity}개</div>
-            <div class="product-description">${product.description || '상품 상세 페이지에서 자세한 설명을 확인하세요.'}</div>
-          </div>
-        </article>
+        </div>
       `;
     }).join('');
   } catch (error) {
@@ -219,23 +188,16 @@ async function loadProductDetail() {
           return;
         }
 
-        const originalText = purchaseBtn.textContent;
         purchaseBtn.disabled = true;
-        purchaseBtn.textContent = '구매 처리중...';
         try {
-          await apiRequest('/ordering-service/ordering/create', {
-            method: 'POST',
-            body: JSON.stringify({
-              productId: product.id,
-              productCount: 1
-            })
+          await apiRequest(`/product-service/product/${product.id}/purchase`, {
+            method: 'POST'
           });
           alert('구매되었습니다.');
           window.location.href = '/';
         } catch (error) {
           purchaseBtn.disabled = false;
-          purchaseBtn.textContent = originalText;
-          showMessage('purchaseMessage', error.message || '구매 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'error');
+          showMessage('purchaseMessage', error.message || '구매에 실패했습니다.', 'error');
         }
       });
     }
