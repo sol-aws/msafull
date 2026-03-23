@@ -44,7 +44,9 @@ public class ProductService {
             System.out.println("X-User-Id 파싱 실패, 기본 사용자 1L로 저장합니다: " + userId);
         }
 
-        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
+        Product savedProduct = productRepository.save(dto.toEntity(memberId, finalImageUrl));
+        System.out.println("상품 등록 완료 - productId=" + savedProduct.getId() + ", memberId=" + memberId);
+        return savedProduct;
     }
 
     @Transactional(readOnly = true)

@@ -9,6 +9,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
 
 @Service
@@ -21,17 +22,25 @@ public class S3Service {
     private String bucket;
 
     public String uploadFile(MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("업로드할 이미지 파일이 없습니다.");
+        }
         if (!StringUtils.hasText(bucket)) {
             throw new IllegalStateException("S3 bucket 설정이 없습니다.");
         }
 
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String originalFilename = StringUtils.hasText(file.getOriginalFilename())
+                ? file.getOriginalFilename()
+                : "product-image";
+        String fileName = UUID.randomUUID() + "_" + originalFilename;
 
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
-        metadata.setContentType(file.getContentType());
+        metadata.setContentType(StringUtils.hasText(file.getContentType()) ? file.getContentType() : "application/octet-stream");
 
-        amazonS3.putObject(bucket, fileName, file.getInputStream(), metadata);
+        try (InputStream inputStream = file.getInputStream()) {
+            amazonS3.putObject(bucket, fileName, inputStream, metadata);
+        }
 
         return amazonS3.getUrl(bucket, fileName).toString();
     }
