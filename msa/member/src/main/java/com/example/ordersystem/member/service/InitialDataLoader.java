@@ -18,12 +18,16 @@ public class InitialDataLoader implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) {
-        if(memberRepository.findByLoginId("admin").isPresent()) return;
+    public void run(String... args) throws Exception {
+        if (memberRepository.findByLoginId("admin").isPresent()
+                || memberRepository.findByEmail("admin@naver.com").isPresent()) {
+            return;
+        }
 
         Member member = Member.builder()
-                .loginId("admin")
                 .name("관리자")
+                .loginId("admin")
+                .nickname("관리자")
                 .email("admin@naver.com")
                 .password(passwordEncoder.encode("12341234"))
                 .role(Role.ADMIN)

@@ -21,11 +21,12 @@ public class MemberService {
 
     public Long save(MemberSaveReqDto memberSaveReqDto){
         if(memberRepository.findByLoginId(memberSaveReqDto.getLoginId()).isPresent()){
-            throw new IllegalArgumentException("이미 사용중인 아이디입니다.");
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
         }
         if(memberRepository.findByEmail(memberSaveReqDto.getEmail()).isPresent()){
-            throw new IllegalArgumentException("이미 사용중인 이메일입니다.");
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
+
         String password = passwordEncoder.encode(memberSaveReqDto.getPassword());
         Member member = memberRepository.save(memberSaveReqDto.toEntity(password));
         return member.getId();
@@ -38,6 +39,7 @@ public class MemberService {
         if(!passwordEncoder.matches(dto.getPassword(), member.getPassword())){
             throw new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다.");
         }
+
         return member;
     }
 }

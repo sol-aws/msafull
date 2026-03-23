@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상품 상세</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a href="/" class="brand">Soldesk Mall</a>
+      <nav class="nav">
+        <a class="btn btn-secondary" href="/">메인</a>
+        <a class="btn btn-secondary" href="/product-create.html">상품등록</a>
+        <div id="userBox" class="btn btn-secondary"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container detail-page">
+    <div id="productDetail"></div>
+  </main>
+
+  <script src="/assets/app.js"></script>
+  <script>
+    renderHeader();
+    loadProductDetail();
+  </script>
+</body>
+</html>

@@ -2,9 +2,6 @@ eureka:
   client:
     enabled: false
 
-server:
-  port: 8080
-
 spring:
   config:
     activate:
@@ -16,65 +13,79 @@ spring:
   cloud:
     gateway:
 
+      # CORS 설정
+      # 다른 도메인에서 브라우저 요청 허용 범위 설정
       globalcors:
         cors-configurations:
-          '[/**]':
+          '[/**]':   # 모든 경로에 대해 CORS 적용
             allowedOrigins:
-              - 'https://server.aws-esk.com'
-            allowedMethods: '*'
-            allowedHeaders: '*'
-            allowedCredentials: true
+              - 'https://server.aws-esk.com'   # 허용할 도메인
+            allowedMethods: '*'                # 모든 HTTP Method 허용
+            allowedHeaders: '*'                # 모든 Header 허용
+            allowedCredentials: true           # 쿠키/인증 정보 허용
 
+      # Gateway 라우팅 설정
+      # 외부 요청을 내부 Kubernetes 서비스로 전달하는 규칙
       routes:
+
+        # 1. MEMBER direct 방식
+        # 외부: https://server.aws-esk.com/member/doLogin
+        # 경로를 그대로 유지한 채 member-service로 전달
+        # 예: /member/doLogin   -->  member-service의 /member/doLogin 실행
         - id: member-direct
           predicates:
             - Path=/member/**
-          uri: http://member-service:8080
+          uri: http://member-service
+
 
         - id: ordering-direct
           predicates:
             - Path=/ordering/**
-          uri: http://ordering-service:8080
+          uri: http://ordering-service
+
 
         - id: product-direct
           predicates:
             - Path=/product/**
-          uri: http://product-service:8080
+          uri: http://product-service
 
+        - id: frontend-direct
+          predicates:
+            - Path=/frontend/**
+          uri: http://frontend-service
+
+        # 4. MEMBER prefix 방식 (기존 방식 유지)
+        # 외부: https://server.aws-esk.com/member-service/...
+        # 앞의 /member-service 제거 후 member-service로 전달
+        # 예: /member-service/member/doLogin → /member/doLogin
         - id: member-service
           predicates:
             - Path=/member-service/**
           filters:
-            - StripPrefix=1
-          uri: http://member-service:8080
+            - StripPrefix=1   # 첫 번째 경로(prefix) 제거
+          uri: http://member-service
+
 
         - id: ordering-service
           predicates:
             - Path=/ordering-service/**
           filters:
             - StripPrefix=1
-          uri: http://ordering-service:8080
+          uri: http://ordering-service
+
 
         - id: product-service
           predicates:
             - Path=/product-service/**
           filters:
             - StripPrefix=1
-          uri: http://product-service:8080
+          uri: http://product-service
 
-  servlet:
-    multipart:
-      max-file-size: 20MB
-      max-request-size: 20MB
-
-  codec:
-    max-in-memory-size: 20MB
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-
+        - id: frontend-service
+          predicates:
+            - Path=/frontend-service/**
+          filters:
+            - StripPrefix=1
+          uri: http://frontend-service
 jwt:
   secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5

@@ -18,42 +18,44 @@ spec:
         app: product
     spec:
       containers:
-      - name: product-container
-        image: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com/product-service:latest
-        ports:
-        - containerPort: 8080
-        resources:
-        # 컨테이너가 사용할수 있는 리소스의 최대치
-          limits:
-            cpu: "1"
-            memory: "500Mi"
-        # 컨테이너가 시작될떄 보장받아야 하는 최소 자원
-          requests:
-            cpu: "0.5"
-            memory: "250Mi"
-        env:
-        - name: DB_HOST
-          valueFrom:
-            secretKeyRef:
-              name: my-app-secrets
-              key: DB_HOST
-        - name: DB_PW
-          valueFrom:
-            secretKeyRef:
-              name: my-app-secrets
-              key: DB_PW
-        - name: APP_UPLOAD_DIR
-          value: /app/uploads
-        # 컨테이너 상태 확인 
-        readinessProbe:
-          httpGet:
-            # healthcheck 경로
-            path: /health
-            port: 8080
-          # 컨테이너 시작 후 지연
-          initialDelaySeconds: 10
-          # 확인 반복 주기
-          periodSeconds: 10
+        - name: product-container
+          image: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com/product-service:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: "500Mi"
+            requests:
+              cpu: "0.5"
+              memory: "250Mi"
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: my-app-secrets
+                  key: DB_HOST
+            - name: DB_PW
+              valueFrom:
+                secretKeyRef:
+                  name: my-app-secrets
+                  key: DB_PW
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secret
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-secret
+                  key: AWS_SECRET_ACCESS_KEY
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
 
 ---
 apiVersion: v1
@@ -64,8 +66,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 80
-    targetPort: 8080
+    - port: 80
+      targetPort: 8080
   selector:
     app: product
-    
