@@ -9,17 +9,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class MemberSaveReqDto {
-    private String name;
     private String loginId;
-    private String nickname;
+    private String name;
     private String email;
     private String password;
 
     public Member toEntity(String encodedPassword){
         return Member.builder()
-                .name(this.name)
                 .loginId(this.loginId)
-                .nickname(this.nickname)
+                .name(this.name)
                 .email(this.email)
                 .password(encodedPassword)
                 .build();

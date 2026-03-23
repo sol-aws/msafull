@@ -49,10 +49,6 @@ spring:
             - Path=/product/**
           uri: http://product-service
 
-        - id: frontend-direct
-          predicates:
-            - Path=/frontend/**
-          uri: http://frontend-service
 
         # 4. MEMBER prefix 방식 (기존 방식 유지)
         # 외부: https://server.aws-esk.com/member-service/...
@@ -81,11 +77,6 @@ spring:
             - StripPrefix=1
           uri: http://product-service
 
-        - id: frontend-service
-          predicates:
-            - Path=/frontend-service/**
-          filters:
-            - StripPrefix=1
-          uri: http://frontend-service
+
 jwt:
   secretKey: YmV5b25kYWNjZXNzdG9rZW5zZWNyZXRrZXliZXlvbmRhY2Nlc3N0b2tlbnNlY3JldGtleWJleW9uZGFjY2Vzc3Rva2Vuc2VjcmV0a2V5

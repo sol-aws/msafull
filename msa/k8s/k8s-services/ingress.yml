@@ -1,3 +1,5 @@
+# ingress-controller 설치 명령어
+# kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.1/deploy/static/provider/aws/deploy.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,34 +14,13 @@ spec:
     - "server.aws-esk.com"
     secretName: server-aws-esk-com-tls
   rules:
-  - host: server.aws-esk.com
+  - host: server.aws-esk.com  # 설정하려는 도메인 이름. 제외시에 elb주소로도 접근할수 있는 모든 도메인 접근 가능.
     http:
       paths:
-      - path: /member-service
+      - path: / #모든 url요청을 apigateway-service로 라우팅
         pathType: Prefix
         backend:
           service:
             name: apigateway-service
-            port:
-              number: 80
-      - path: /product-service
-        pathType: Prefix
-        backend:
-          service:
-            name: apigateway-service
-            port:
-              number: 80
-      - path: /ordering-service
-        pathType: Prefix
-        backend:
-          service:
-            name: apigateway-service
-            port:
-              number: 80
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend-service
             port:
               number: 80

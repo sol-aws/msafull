@@ -1,91 +1,94 @@
 package com.example.ordersystem.product.service;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.example.ordersystem.product.domain.Product;
 import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
-import com.example.ordersystem.product.dto.ProductUpdateStockDto;
 import com.example.ordersystem.product.repository.ProductRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
 public class ProductService {
     private final ProductRepository productRepository;
-    private final S3Service s3Service;
+    private final AmazonS3 amazonS3;
 
-    public ProductService(ProductRepository productRepository, S3Service s3Service) {
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucket;
+
+    public ProductService(ProductRepository productRepository, AmazonS3 amazonS3) {
         this.productRepository = productRepository;
-        this.s3Service = s3Service;
+        this.amazonS3 = amazonS3;
     }
 
-    public Product productCreate(ProductRegisterDto dto, String userId) throws IOException {
-        String finalImageUrl = dto.getImageUrl();
-        if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
-            finalImageUrl = s3Service.uploadFile(dto.getImageFile());
-        }
-        return productRepository.save(dto.toEntity(Long.parseLong(userId), finalImageUrl));
+    public Product productCreate(ProductRegisterDto dto, MultipartFile image, String userId){
+        String imageUrl = uploadImage(image);
+        Product product = Product.builder()
+                .name(dto.getName())
+                .description(dto.getDescription())
+                .category(dto.getCategory())
+                .price(dto.getPrice())
+                .stockQuantity(dto.getStockQuantity())
+                .imageUrl(imageUrl)
+                .memberId(Long.parseLong(userId))
+                .build();
+        return productRepository.save(product);
     }
 
-    @Transactional(readOnly = true)
+    public List<ProductResDto> productList(){
+        return productRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
     public ProductResDto productDetail(Long id){
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
         return toDto(product);
     }
 
-    @Transactional(readOnly = true)
-    public List<ProductResDto> productList(){
-        return productRepository.findAllByOrderByIdDesc()
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
-
-    public Product updateStockQuantity(ProductUpdateStockDto productUpdateStockDto){
-        Product product = productRepository.findById(productUpdateStockDto.getProductId())
+    public Product decreaseStockQuantity(Long productId, int quantity){
+        Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
-        if (productUpdateStockDto.getProductQuantity() == null) {
-            throw new IllegalArgumentException("구매 수량이 없습니다.");
-        }
-        product.updateStockQuantity(productUpdateStockDto.getProductQuantity());
+        product.decreaseStockQuantity(quantity);
         return product;
     }
 
-    public Product purchaseProduct(Long id){
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
-        product.updateStockQuantity(1);
-        return product;
-    }
-
-    @KafkaListener(topics = "update-stock-topic", containerFactory = "kafkaListener")
-    public void stockConsumer(String message){
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            ProductUpdateStockDto dto = objectMapper.readValue(message, ProductUpdateStockDto.class);
-            this.updateStockQuantity(dto);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private ProductResDto toDto(Product product){
+    private ProductResDto toDto(Product product) {
         return ProductResDto.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .category(product.getCategory())
                 .description(product.getDescription())
+                .category(product.getCategory())
                 .imageUrl(product.getImageUrl())
                 .price(product.getPrice())
                 .stockQuantity(product.getStockQuantity())
                 .build();
+    }
+
+    private String uploadImage(MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new IllegalArgumentException("상품 이미지는 필수입니다.");
+        }
+        try {
+            String originalName = image.getOriginalFilename() == null ? "product-image" : image.getOriginalFilename();
+            String key = "products/" + UUID.randomUUID() + "-" + originalName.replaceAll("\s+", "-");
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(image.getSize());
+            metadata.setContentType(image.getContentType());
+            amazonS3.putObject(bucket, key, image.getInputStream(), metadata);
+            return amazonS3.getUrl(bucket, key).toString();
+        } catch (IOException e) {
+            throw new IllegalArgumentException("이미지 업로드에 실패했습니다.");
+        }
     }
 }

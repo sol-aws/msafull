@@ -6,11 +6,10 @@ import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.dto.ProductUpdateStockDto;
 import com.example.ordersystem.product.service.ProductService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,33 +21,28 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @PostMapping(value = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> productCreate(@ModelAttribute ProductRegisterDto dto, @RequestHeader("X-User-Id") String userId) throws IOException {
-        Product product = productService.productCreate(dto, userId);
+    @PostMapping(value = "/create", consumes = "multipart/form-data")
+    public ResponseEntity<?> productCreate(@ModelAttribute ProductRegisterDto dto,
+                                           @RequestPart("image") MultipartFile image,
+                                           @RequestHeader("X-User-Id") String userId){
+        Product product = productService.productCreate(dto, image, userId);
         return new ResponseEntity<>(product.getId(), HttpStatus.CREATED);
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> productList(){
-        List<ProductResDto> productList = productService.productList();
-        return new ResponseEntity<>(productList, HttpStatus.OK);
+    public ResponseEntity<List<ProductResDto>> productList(){
+        return new ResponseEntity<>(productService.productList(), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> productDetail(@PathVariable Long id){
-        ProductResDto productResDto = productService.productDetail(id);
-        return new ResponseEntity<>(productResDto, HttpStatus.OK);
+    public ResponseEntity<ProductResDto> productDetail(@PathVariable Long id) {
+        return new ResponseEntity<>(productService.productDetail(id), HttpStatus.OK);
     }
 
     @PutMapping("/updatestock")
-    public ResponseEntity<?> updateStock(@RequestBody ProductUpdateStockDto productUpdateStockDto){
-        Product product = productService.updateStockQuantity(productUpdateStockDto);
-        return new ResponseEntity<>(product.getId(), HttpStatus.OK);
-    }
-
-    @PostMapping("/{id}/purchase")
-    public ResponseEntity<?> purchaseProduct(@PathVariable Long id){
-        Product product = productService.purchaseProduct(id);
+    public ResponseEntity<?> updateStock(@RequestBody ProductUpdateStockDto productUpdateStockDto,
+                                         @RequestHeader("X-User-Id") String userId){
+        Product product = productService.decreaseStockQuantity(productUpdateStockDto.getProductId(), productUpdateStockDto.getProductQuantity());
         return new ResponseEntity<>(product.getId(), HttpStatus.OK);
     }
 }

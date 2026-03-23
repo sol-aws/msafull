@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>쇼핑몰 메인</title>
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div>
+      <h1>쇼핑몰 메인</h1>
+      <div id="welcome" class="meta">로그인 후 상품 등록과 구매가 가능합니다.</div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="/login.html">로그인</a>
+      <a class="btn secondary" href="/signup.html">회원가입</a>
+      <a class="btn" href="/product-create.html">상품등록</a>
+      <button id="logoutBtn" class="danger" style="display:none;">로그아웃</button>
+    </div>
+  </div>
+  <div id="productList" class="card-grid"></div>
+</div>
+<script src="/js/app.js"></script>
+<script>
+  const user = getLoginUser();
+  if (user) {
+    document.getElementById('welcome').innerText = `${user.name}(${user.loginId}) 님 로그인 상태입니다.`;
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('logoutBtn').onclick = logout;
+  }
+
+  async function loadProducts() {
+    const products = await api('/product/list');
+    const list = document.getElementById('productList');
+    if (!products.length) {
+      list.innerHTML = '<div class="meta">등록된 상품이 없습니다.</div>';
+      return;
+    }
+    list.innerHTML = products.map(p => `
+      <div class="card">
+        <img src="${p.imageUrl}" alt="${p.name}">
+        <div class="card-body">
+          <div class="meta">${p.category || ''}</div>
+          <h3>${p.name}</h3>
+          <div class="price">${Number(p.price).toLocaleString()}원</div>
+          <div class="meta">재고 ${p.stockQuantity}개</div>
+          <p>${p.description || ''}</p>
+          <a class="btn" href="/product-detail.html?id=${p.id}">상세보기</a>
+        </div>
+      </div>
+    `).join('');
+  }
+  loadProducts().catch(err => alert(err.message));
+</script>
+</body>
+</html>

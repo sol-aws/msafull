@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
+@Table(name = "product")
 public class Product extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,29 +21,27 @@ public class Product extends BaseTimeEntity {
     @Column(nullable = false)
     private String name;
 
-    private String category;
-
     @Column(length = 1000)
     private String description;
 
+    private String category;
+
+    @Column(name = "image_url", length = 1000)
     private String imageUrl;
 
-    @Column(nullable = false)
     private Integer price;
-
-    @Column(nullable = false)
     private Integer stockQuantity;
 
     @Column(nullable = false)
     private Long memberId;
 
-    public void updateStockQuantity(int stockQuantity){
-        if (stockQuantity <= 0) {
-            throw new IllegalArgumentException("구매 수량은 1개 이상이어야 합니다.");
+    public void decreaseStockQuantity(int quantity){
+        if (this.stockQuantity == null) {
+            this.stockQuantity = 0;
         }
-        if (this.stockQuantity < stockQuantity) {
+        if (this.stockQuantity < quantity) {
             throw new IllegalArgumentException("재고가 부족합니다.");
         }
-        this.stockQuantity = this.stockQuantity - stockQuantity;
+        this.stockQuantity = this.stockQuantity - quantity;
     }
 }

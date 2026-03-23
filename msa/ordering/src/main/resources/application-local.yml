@@ -17,11 +17,8 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     generate-ddl: true
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     show_sql: true
-  kafka:
-    kafka-server: localhost:9092
-
 eureka:
   client:
     serviceUrl:
