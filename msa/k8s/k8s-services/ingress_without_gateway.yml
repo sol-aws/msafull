@@ -9,6 +9,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "20m"
     nginx.ingress.kubernetes.io/rewrite-target: /$1 #첫번쨰 prefix제거
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
     - "server.aws-esk.com"

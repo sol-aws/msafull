@@ -50,10 +50,6 @@ spec:
                 secretKeyRef:
                   name: aws-secret
                   key: AWS_SECRET_ACCESS_KEY
-            - name: AWS_REGION
-              value: ap-northeast-2
-            - name: S3_BUCKET
-              value: soldesk-product-shop-images
           readinessProbe:
             httpGet:
               path: /health

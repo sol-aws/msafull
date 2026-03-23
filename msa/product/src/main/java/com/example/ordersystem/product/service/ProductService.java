@@ -5,10 +5,14 @@ import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.dto.ProductUpdateStockDto;
 import com.example.ordersystem.product.repository.ProductRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -22,31 +26,12 @@ public class ProductService {
         this.s3Service = s3Service;
     }
 
-    public Product productCreate(ProductRegisterDto dto, String userId) {
+    public Product productCreate(ProductRegisterDto dto, String userId) throws IOException {
         String finalImageUrl = dto.getImageUrl();
-
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
-            try {
-                finalImageUrl = s3Service.uploadFile(dto.getImageFile());
-            } catch (Exception e) {
-                System.out.println("S3 업로드 실패, DB 저장은 계속 진행합니다: " + e.getMessage());
-                e.printStackTrace();
-                finalImageUrl = dto.getImageUrl();
-            }
+            finalImageUrl = s3Service.uploadFile(dto.getImageFile());
         }
-
-        Long memberId = 1L;
-        try {
-            if (userId != null && !userId.isBlank()) {
-                memberId = Long.parseLong(userId);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("X-User-Id 파싱 실패, 기본 사용자 1L로 저장합니다: " + userId);
-        }
-
-        Product savedProduct = productRepository.save(dto.toEntity(memberId, finalImageUrl));
-        System.out.println("상품 등록 완료 - productId=" + savedProduct.getId() + ", memberId=" + memberId);
-        return savedProduct;
+        return productRepository.save(dto.toEntity(Long.parseLong(userId), finalImageUrl));
     }
 
     @Transactional(readOnly = true)
@@ -79,6 +64,17 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
         product.updateStockQuantity(1);
         return product;
+    }
+
+    @KafkaListener(topics = "update-stock-topic", containerFactory = "kafkaListener")
+    public void stockConsumer(String message){
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            ProductUpdateStockDto dto = objectMapper.readValue(message, ProductUpdateStockDto.class);
+            this.updateStockQuantity(dto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ProductResDto toDto(Product product){

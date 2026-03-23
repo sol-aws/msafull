@@ -191,10 +191,10 @@ jobs:
 
 
 
-      - name: deploy ingress and shared k8s resources
+      # Shared K8s 리소스 반영 (Ingress 등)
+      - name: deploy shared k8s resources
         if: steps.changes.outputs.k8s == 'true'
         run: |
           kubectl apply -f ./msa/k8s/k8s-services/ingress.yml
-          kubectl apply -f ./msa/k8s/k8s-services/ingress_without_gateway.yml
-          kubectl apply -f ./msa/k8s/k8s-services/https.yml
-          kubectl apply -f ./msa/k8s/k8s-services/redis.yml
+          if [ -f ./msa/k8s/k8s-services/https.yml ]; then kubectl apply -f ./msa/k8s/k8s-services/https.yml; fi
+          if [ -f ./msa/k8s/k8s-services/ingress_without_gateway.yml ]; then kubectl apply -f ./msa/k8s/k8s-services/ingress_without_gateway.yml; fi

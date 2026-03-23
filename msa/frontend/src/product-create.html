@@ -40,11 +40,7 @@
       </div>
       <div class="field">
         <label for="imageFile">상품 이미지 파일</label>
-        <input id="imageFile" name="imageFile" type="file" accept="image/*">
-      </div>
-      <div class="field">
-        <label for="imageUrl">이미지 URL (선택)</label>
-        <input id="imageUrl" name="imageUrl" type="text" placeholder="파일 업로드가 어려우면 이미지 URL을 입력하세요">
+        <input id="imageFile" name="imageFile" type="file" accept="image/*" required>
       </div>
       <div class="field">
         <label for="price">가격</label>
@@ -72,6 +68,10 @@
       event.preventDefault();
 
       const imageFile = document.getElementById('imageFile').files[0];
+      if (!imageFile) {
+        showMessage('productMessage', '상품 이미지를 선택해주세요.', 'error');
+        return;
+      }
 
       const formData = new FormData();
       formData.append('name', document.getElementById('name').value);
@@ -79,10 +79,7 @@
       formData.append('price', document.getElementById('price').value);
       formData.append('stockQuantity', document.getElementById('stockQuantity').value);
       formData.append('description', document.getElementById('description').value);
-      formData.append('imageUrl', document.getElementById('imageUrl').value);
-      if (imageFile) {
-        formData.append('imageFile', imageFile);
-      }
+      formData.append('imageFile', imageFile);
 
       try {
         await apiRequest('/product-service/product/create', {
@@ -94,7 +91,7 @@
           window.location.href = '/';
         }, 700);
       } catch (error) {
-        showMessage('productMessage', error.message || '상품 등록에 실패했습니다.', 'error');
+        showMessage('productMessage', '상품 등록에 실패했습니다. S3 설정과 로그인 상태를 확인해주세요.', 'error');
       }
     });
   </script>

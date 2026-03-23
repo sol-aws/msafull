@@ -7,9 +7,6 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.core.io.buffer.DataBuffer;
-import java.nio.charset.StandardCharsets;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -56,10 +53,7 @@ public class JwtAuthFilter implements GlobalFilter {
         } catch (IllegalArgumentException | MalformedJwtException | ExpiredJwtException | SignatureException |
                  UnsupportedJwtException e) {
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-            exchange.getResponse().getHeaders().setContentType(MediaType.TEXT_PLAIN);
-            DataBuffer buffer = exchange.getResponse().bufferFactory()
-                    .wrap("로그인 인증이 만료되었거나 유효하지 않습니다.".getBytes(StandardCharsets.UTF_8));
-            return exchange.getResponse().writeWith(Mono.just(buffer));
+            return exchange.getResponse().setComplete();
         }
     }
 

@@ -10,6 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,10 +23,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> productCreate(
-            @ModelAttribute ProductRegisterDto dto,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        System.out.println("[ProductController] create 요청 수신 - name=" + dto.getName() + ", userId=" + userId);
+    public ResponseEntity<?> productCreate(@ModelAttribute ProductRegisterDto dto, @RequestHeader("X-User-Id") String userId) throws IOException {
         Product product = productService.productCreate(dto, userId);
         return new ResponseEntity<>(product.getId(), HttpStatus.CREATED);
     }
