@@ -4,25 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>상품 상세</title>
-  <link rel="stylesheet" href="/assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css?v=20260322b">
 </head>
 <body>
-  <header class="header">
-    <div class="container">
-      <a href="/" class="brand">Soldesk Mall</a>
-      <nav class="nav">
-        <a class="btn btn-secondary" href="/">메인</a>
-        <a class="btn btn-secondary" href="/product-create.html">상품등록</a>
-        <div id="userBox" class="btn btn-secondary"></div>
-      </nav>
+  <!-- FIX_VERSION_20260322_V3 -->
+  <header class="shop-header">
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <a href="/" class="brand brand-large">Soldesk Market</a>
+        <form class="search-box" onsubmit="return false;">
+          <input type="text" placeholder="갤럭시, 노트북, 이어폰 등 원하는 상품을 검색해보세요">
+        </form>
+        <nav class="header-actions">
+          <a class="header-link" href="/">메인</a>
+          <a class="header-link auth-guest" href="/login.html">로그인</a>
+          <a class="header-link auth-guest" href="/signup.html">회원가입</a>
+          <a class="header-link auth-user" href="/product-create.html">상품등록</a>
+          <div id="userBox" class="user-box"></div>
+        </nav>
+      </div>
     </div>
   </header>
+
 
   <main class="container detail-page">
     <div id="productDetail"></div>
   </main>
 
-  <script src="/assets/app.js"></script>
+  <script src="/assets/app.js?v=20260322b"></script>
   <script>
     renderHeader();
     loadProductDetail();

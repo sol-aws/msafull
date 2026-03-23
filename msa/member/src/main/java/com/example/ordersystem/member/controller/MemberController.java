@@ -37,31 +37,45 @@ public class MemberController {
 
     @PostMapping("/create")
     public ResponseEntity<?> memberCreate(@RequestBody MemberSaveReqDto memberSaveReqDto){
-        Long memberId = memberService.save(memberSaveReqDto);
+        try {
+            Long memberId = memberService.save(memberSaveReqDto);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", memberId);
-        response.put("message", "회원가입이 완료되었습니다.");
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", memberId);
+            response.put("message", "회원가입이 완료되었습니다.");
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("회원가입 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/doLogin")
     public ResponseEntity<?> doLogin(@RequestBody LoginDto dto){
-        Member member = memberService.login(dto);
-        String token = jwtTokenProvider.createToken(member.getId().toString(), member.getRole().toString());
-        String refreshToken = jwtTokenProvider.createRefreshToken(member.getEmail(), member.getRole().toString());
+        try {
+            Member member = memberService.login(dto);
+            String token = jwtTokenProvider.createToken(member.getId().toString(), member.getRole().toString());
+            String refreshToken = jwtTokenProvider.createRefreshToken(member.getEmail(), member.getRole().toString());
 
-        redisTemplate.opsForValue().set(member.getEmail(), refreshToken, 200, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set(member.getEmail(), refreshToken, 200, TimeUnit.DAYS);
 
-        Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("id", member.getId());
-        loginInfo.put("name", member.getName());
-        loginInfo.put("email", member.getEmail());
-        loginInfo.put("role", member.getRole());
-        loginInfo.put("token", token);
-        loginInfo.put("refreshToken", refreshToken);
-        loginInfo.put("message", "로그인에 성공했습니다.");
-        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+            Map<String, Object> loginInfo = new HashMap<>();
+            loginInfo.put("id", member.getId());
+            loginInfo.put("name", member.getName());
+            loginInfo.put("loginId", member.getLoginId());
+            loginInfo.put("nickname", member.getNickname());
+            loginInfo.put("email", member.getEmail());
+            loginInfo.put("role", member.getRole());
+            loginInfo.put("token", token);
+            loginInfo.put("refreshToken", refreshToken);
+            loginInfo.put("message", "로그인에 성공했습니다.");
+            return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("로그인 처리 중 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/refresh-token")
@@ -78,8 +92,8 @@ public class MemberController {
         }
 
         String token = jwtTokenProvider.createToken(claims.getSubject(), claims.get("role").toString());
-        Map<String, Object> loginInfo = new HashMap<>();
-        loginInfo.put("token", token);
-        return new ResponseEntity<>(loginInfo, HttpStatus.OK);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
