@@ -170,6 +170,12 @@ jobs:
           kubectl apply -f ./msa/product/k8s/depl_svc.yml
           kubectl rollout restart deployment product-depl -n soldesk
 
+
+      - name: deploy shared k8s resources
+        if: steps.changes.outputs.k8s == 'true'
+        run: |
+          kubectl apply -f ./msa/k8s/k8s-services/ingress.yml
+
       # Frontend 빌드
       - name: frontend build and push docker image to ecr
         if: steps.changes.outputs.frontend == 'true'
@@ -189,12 +195,3 @@ jobs:
           kubectl apply -f ./msa/frontend/k8s/depl_svc.yml
           kubectl rollout restart deployment frontend-depl -n soldesk
 
-
-
-      # Shared K8s 리소스 반영 (Ingress 등)
-      - name: deploy shared k8s resources
-        if: steps.changes.outputs.k8s == 'true'
-        run: |
-          kubectl apply -f ./msa/k8s/k8s-services/ingress.yml
-          if [ -f ./msa/k8s/k8s-services/https.yml ]; then kubectl apply -f ./msa/k8s/k8s-services/https.yml; fi
-          if [ -f ./msa/k8s/k8s-services/ingress_without_gateway.yml ]; then kubectl apply -f ./msa/k8s/k8s-services/ingress_without_gateway.yml; fi
