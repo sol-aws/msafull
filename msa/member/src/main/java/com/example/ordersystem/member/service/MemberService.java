@@ -21,10 +21,11 @@ public class MemberService {
 
     public Long save(MemberSaveReqDto memberSaveReqDto){
         if(memberRepository.findByLoginId(memberSaveReqDto.getLoginId()).isPresent()){
-            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
         }
+
         if(memberRepository.findByEmail(memberSaveReqDto.getEmail()).isPresent()){
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
         String password = passwordEncoder.encode(memberSaveReqDto.getPassword());

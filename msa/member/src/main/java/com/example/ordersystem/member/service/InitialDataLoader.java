@@ -18,9 +18,8 @@ public class InitialDataLoader implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        if (memberRepository.findByLoginId("admin").isPresent()
-                || memberRepository.findByEmail("admin@naver.com").isPresent()) {
+    public void run(String... args) {
+        if(memberRepository.findByLoginId("admin").isPresent() || memberRepository.findByEmail("admin@naver.com").isPresent()) {
             return;
         }
 

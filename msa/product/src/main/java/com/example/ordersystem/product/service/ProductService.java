@@ -5,10 +5,7 @@ import com.example.ordersystem.product.dto.ProductRegisterDto;
 import com.example.ordersystem.product.dto.ProductResDto;
 import com.example.ordersystem.product.dto.ProductUpdateStockDto;
 import com.example.ordersystem.product.repository.ProductRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +28,13 @@ public class ProductService {
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             finalImageUrl = s3Service.uploadFile(dto.getImageFile());
         }
-        return productRepository.save(dto.toEntity(Long.parseLong(userId), finalImageUrl));
+
+        Long memberId = 1L;
+        if (userId != null && !userId.isBlank()) {
+            memberId = Long.parseLong(userId);
+        }
+
+        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
     }
 
     @Transactional(readOnly = true)
@@ -64,17 +67,6 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("없는 상품입니다."));
         product.updateStockQuantity(1);
         return product;
-    }
-
-    @KafkaListener(topics = "update-stock-topic", containerFactory = "kafkaListener")
-    public void stockConsumer(String message){
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            ProductUpdateStockDto dto = objectMapper.readValue(message, ProductUpdateStockDto.class);
-            this.updateStockQuantity(dto);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private ProductResDto toDto(Product product){
