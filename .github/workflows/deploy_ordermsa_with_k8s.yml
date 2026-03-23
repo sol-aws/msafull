@@ -89,7 +89,7 @@ jobs:
       - name: gateway build and push docker image to ecr
         if: steps.changes.outputs.gateway == 'true'
         env:         
-          REGISTRY: 895421295243.dkr.ecr.ap-northeast-2.amazonaws.com
+          REGISTRY: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com
           REPOSITORY: apigateway
           IMAGE_TAG: latest
         run: |
@@ -109,7 +109,7 @@ jobs:
       - name: member build and push docker image to ecr
         if: steps.changes.outputs.member == 'true'
         env:
-          REGISTRY: 895421295243.dkr.ecr.ap-northeast-2.amazonaws.com
+          REGISTRY: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com
           REPOSITORY: member-service
           IMAGE_TAG: latest
         run: |
@@ -129,7 +129,7 @@ jobs:
       - name: order build and push docker image to ecr
         if: steps.changes.outputs.ordering == 'true'
         env:
-          REGISTRY: 895421295243.dkr.ecr.ap-northeast-2.amazonaws.com
+          REGISTRY: 683668078297.dkr.ecr.ap-northeast-2.amazonaws.com
           REPOSITORY: ordering-service
           IMAGE_TAG: latest
         run: |
