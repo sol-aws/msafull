@@ -14,18 +14,39 @@ public class CommonExceptionHandler {
     public ResponseEntity<?> illegal(IllegalArgumentException e) {
         e.printStackTrace();
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> exception(Exception e) {
+        e.printStackTrace();
+        String message = e.getMessage() == null ? "서버 처리 중 오류가 발생했습니다." : e.getMessage();
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+}
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> method(MethodArgumentNotValidException e) {
         e.printStackTrace();
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> exception(Exception e) {
+        e.printStackTrace();
+        String message = e.getMessage() == null ? "서버 처리 중 오류가 발생했습니다." : e.getMessage();
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+}
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> entityNotFound(EntityNotFoundException e) {
         e.printStackTrace();
         return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> exception(Exception e) {
+        e.printStackTrace();
+        String message = e.getMessage() == null ? "서버 처리 중 오류가 발생했습니다." : e.getMessage();
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+}
 
 }

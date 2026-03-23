@@ -30,12 +30,23 @@ public class ProductService {
             try {
                 finalImageUrl = s3Service.uploadFile(dto.getImageFile());
             } catch (Exception e) {
-                // S3 업로드가 실패해도 상품 자체는 등록되도록 처리
-                finalImageUrl = dto.getImageUrl();
+                System.out.println("S3 upload failed, continuing without image upload: " + e.getMessage());
             }
         }
 
-        return productRepository.save(dto.toEntity(Long.parseLong(userId), finalImageUrl));
+        Long memberId = parseUserId(userId);
+        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
+    }
+
+    private Long parseUserId(String userId) {
+        try {
+            if (userId == null || userId.isBlank()) {
+                return 1L;
+            }
+            return Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            return 1L;
+        }
     }
 
     @Transactional(readOnly = true)

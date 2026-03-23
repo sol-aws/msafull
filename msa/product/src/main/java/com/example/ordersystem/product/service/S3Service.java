@@ -5,7 +5,6 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,12 +20,8 @@ public class S3Service {
     private String bucket;
 
     public String uploadFile(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        if (!StringUtils.hasText(bucket)) {
-            return null;
+        if (bucket == null || bucket.isBlank()) {
+            throw new IllegalStateException("S3 bucket 설정이 없습니다.");
         }
 
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();

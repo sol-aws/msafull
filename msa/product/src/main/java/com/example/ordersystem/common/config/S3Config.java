@@ -1,15 +1,12 @@
 package com.example.ordersystem.common.config;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.StringUtils;
 
 @Configuration
 public class S3Config {
@@ -28,16 +25,17 @@ public class S3Config {
         AmazonS3ClientBuilder builder = AmazonS3ClientBuilder.standard()
                 .withRegion(region);
 
-        if (StringUtils.hasText(accessKey) && StringUtils.hasText(secretKey)
+        if (hasText(accessKey) && hasText(secretKey)
                 && !"YOUR_ACCESS_KEY".equals(accessKey)
                 && !"YOUR_SECRET_KEY".equals(secretKey)) {
             BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
             builder.withCredentials(new AWSStaticCredentialsProvider(credentials));
-        } else {
-            AWSCredentialsProvider credentialsProvider = DefaultAWSCredentialsProviderChain.getInstance();
-            builder.withCredentials(credentialsProvider);
         }
 
         return builder.build();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

@@ -23,7 +23,10 @@ public class ProductController {
     }
 
     @PostMapping(value = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<?> productCreate(@ModelAttribute ProductRegisterDto dto, @RequestHeader("X-User-Id") String userId) throws IOException {
+    public ResponseEntity<?> productCreate(
+            @ModelAttribute ProductRegisterDto dto,
+            @RequestHeader(value = "X-User-Id", required = false) String userId
+    ) throws IOException {
         Product product = productService.productCreate(dto, userId);
         return new ResponseEntity<>(product.getId(), HttpStatus.CREATED);
     }

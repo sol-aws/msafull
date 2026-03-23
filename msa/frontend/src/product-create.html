@@ -91,7 +91,7 @@
           window.location.href = '/';
         }, 700);
       } catch (error) {
-        showMessage('productMessage', error.message || '상품 등록에 실패했습니다. 서버 로그를 확인해주세요.', 'error');
+        showMessage('productMessage', '상품 등록에 실패했습니다. S3 설정과 로그인 상태를 확인해주세요.', 'error');
       }
     });
   </script>
