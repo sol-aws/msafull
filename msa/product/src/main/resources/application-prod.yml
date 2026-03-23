@@ -16,7 +16,7 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://${DB_HOST}:3306/ordersmsa?useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://${DB_HOST}:3306/ordermsa?useSSL=false&allowPublicKeyRetrieval=true
     username: admin
     password: ${DB_PW}
 
