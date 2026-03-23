@@ -10,14 +10,13 @@ spring:
   application:
     name: api-gateway    # 게이트웨이 서비스 이름
 
-  codec:
-    max-in-memory-size: 20MB
-
-
   servlet:
     multipart:
       max-file-size: 20MB
       max-request-size: 20MB
+
+  codec:
+    max-in-memory-size: 20MB
 
   # Spring Cloud Gateway 설정
   cloud:
