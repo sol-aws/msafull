@@ -25,6 +25,7 @@ public class ProductController {
     public ResponseEntity<?> productCreate(
             @ModelAttribute ProductRegisterDto dto,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
+        System.out.println("[ProductController] create 요청 수신 - name=" + dto.getName() + ", userId=" + userId);
         Product product = productService.productCreate(dto, userId);
         return new ResponseEntity<>(product.getId(), HttpStatus.CREATED);
     }

@@ -1,5 +1,6 @@
 const API_BASE = '';
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80';
+let refreshPromise = null;
 
 function saveAuth(data) {
   localStorage.setItem('auth', JSON.stringify(data));
@@ -73,6 +74,10 @@ function extractErrorMessage(text) {
     return '구매 요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.';
   }
 
+  if (text.includes('token 관련 예외 발생') || text.includes('인증이 만료') || text.includes('Unauthorized')) {
+    return '로그인 인증이 만료되었습니다. 다시 로그인해주세요.';
+  }
+
   if (text.includes('<html') || text.includes('<!DOCTYPE') || text.includes('<body')) {
     return '서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
   }
@@ -80,7 +85,30 @@ function extractErrorMessage(text) {
   return text;
 }
 
-async function apiRequest(url, options = {}) {
+async function refreshAccessToken() {
+  const auth = getAuth();
+  if (!auth || !auth.refreshToken) {
+    throw new Error('로그인 인증이 만료되었습니다. 다시 로그인해주세요.');
+  }
+
+  const response = await fetch(`${API_BASE}/member-service/member/refresh-token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken: auth.refreshToken })
+  });
+
+  if (!response.ok) {
+    clearAuth();
+    throw new Error('로그인 인증이 만료되었습니다. 다시 로그인해주세요.');
+  }
+
+  const result = await response.json();
+  auth.token = result.token;
+  saveAuth(auth);
+  return auth.token;
+}
+
+async function apiRequest(url, options = {}, retry = true) {
   const headers = options.headers || {};
   const token = getToken();
   if (token) {
