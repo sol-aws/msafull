@@ -30,6 +30,9 @@ public class CommonExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exception(Exception e) {
         e.printStackTrace();
-        return new ResponseEntity<>("서버 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", HttpStatus.INTERNAL_SERVER_ERROR);
+        String message = e.getMessage() == null || e.getMessage().isBlank()
+                ? "서버 처리 중 오류가 발생했습니다."
+                : e.getMessage();
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

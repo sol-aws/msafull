@@ -9,7 +9,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -23,31 +22,29 @@ public class ProductService {
         this.s3Service = s3Service;
     }
 
-    public Product productCreate(ProductRegisterDto dto, String userId) throws IOException {
+    public Product productCreate(ProductRegisterDto dto, String userId) {
         String finalImageUrl = dto.getImageUrl();
 
         if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
             try {
                 finalImageUrl = s3Service.uploadFile(dto.getImageFile());
             } catch (Exception e) {
+                System.out.println("S3 업로드 실패, DB 저장은 계속 진행합니다: " + e.getMessage());
                 e.printStackTrace();
-                // S3 업로드가 실패해도 상품 자체는 등록되도록 처리
+                finalImageUrl = dto.getImageUrl();
             }
         }
 
-        Long memberId = parseUserId(userId);
-        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
-    }
-
-    private Long parseUserId(String userId) {
-        if (userId == null || userId.isBlank()) {
-            return 1L;
-        }
+        Long memberId = 1L;
         try {
-            return Long.parseLong(userId);
+            if (userId != null && !userId.isBlank()) {
+                memberId = Long.parseLong(userId);
+            }
         } catch (NumberFormatException e) {
-            return 1L;
+            System.out.println("X-User-Id 파싱 실패, 기본 사용자 1L로 저장합니다: " + userId);
         }
+
+        return productRepository.save(dto.toEntity(memberId, finalImageUrl));
     }
 
     @Transactional(readOnly = true)
