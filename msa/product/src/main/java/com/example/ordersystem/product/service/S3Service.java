@@ -20,6 +20,10 @@ public class S3Service {
     private String bucket;
 
     public String uploadFile(MultipartFile file) throws IOException {
+        if (bucket == null || bucket.isBlank()) {
+            throw new IllegalStateException("S3 버킷 설정이 비어 있습니다.");
+        }
+
         String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
         ObjectMetadata metadata = new ObjectMetadata();

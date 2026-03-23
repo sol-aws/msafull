@@ -6,82 +6,71 @@ import com.example.ordersystem.ordering.dto.ProductDto;
 import com.example.ordersystem.ordering.dto.ProductUpdateStockDto;
 import com.example.ordersystem.ordering.repository.OrderingRepository;
 import org.springframework.http.*;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-
 @Service
 @Transactional
 public class OrderingService {
+
     private final OrderingRepository orderingRepository;
     private final RestTemplate restTemplate;
-    private final ProductFeign productFeign;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public OrderingService(OrderingRepository orderingRepository, RestTemplate restTemplate, ProductFeign productFeign, KafkaTemplate<String, Object> kafkaTemplate) {
+    public OrderingService(OrderingRepository orderingRepository, RestTemplate restTemplate) {
         this.orderingRepository = orderingRepository;
         this.restTemplate = restTemplate;
-        this.productFeign = productFeign;
-        this.kafkaTemplate = kafkaTemplate;
     }
 
-    public Ordering orderCreate(OrderCreateDto orderDto, String userId){
+    public Ordering orderCreate(OrderCreateDto orderDto, String userId) {
 
-//        product get 요청
-        String productGetUrl = "http://product-service/product/"+orderDto.getProductId();
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("X-User-Id", userId);
-        HttpEntity<String> httpEntity = new HttpEntity<>(httpHeaders);
-        ResponseEntity<ProductDto> response =  restTemplate.exchange(productGetUrl, HttpMethod.GET, httpEntity, ProductDto.class);
-        ProductDto productDto = response.getBody();
-        int quantity = orderDto.getProductCount();
-        if(productDto.getStockQuantity() < quantity){
-            throw new IllegalArgumentException("재고 부족");
-        }else {
+        // 1. 상품 조회
+        String getUrl = "http://product-service.soldesk.svc.cluster.local/product/" + orderDto.getProductId();
 
-//        product put 요청
-            String productPutUrl = "http://product-service/product/updatestock";
-            httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<ProductUpdateStockDto> updateEntity = new HttpEntity(
-                    ProductUpdateStockDto.builder().productId(orderDto.getProductId())
-                            .productQuantity(orderDto.getProductCount()).build()
-                    , httpHeaders
-            );
-            restTemplate.exchange(productPutUrl, HttpMethod.PUT, updateEntity, Void.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-User-Id", userId);
+
+        ResponseEntity<ProductDto> response = restTemplate.exchange(
+                getUrl,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                ProductDto.class
+        );
+
+        ProductDto product = response.getBody();
+
+        if (product == null) {
+            throw new RuntimeException("상품 없음");
         }
-        Ordering ordering = Ordering.builder()
+
+        if (product.getStockQuantity() < orderDto.getProductCount()) {
+            throw new RuntimeException("재고 부족");
+        }
+
+        // 2. 재고 차감
+        String updateUrl = "http://product-service.soldesk.svc.cluster.local/product/updatestock";
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ProductUpdateStockDto updateDto = ProductUpdateStockDto.builder()
+                .productId(orderDto.getProductId())
+                .productQuantity(orderDto.getProductCount())
+                .build();
+
+        restTemplate.exchange(
+                updateUrl,
+                HttpMethod.PUT,
+                new HttpEntity<>(updateDto, headers),
+                Void.class
+        );
+
+        // 3. 주문 저장
+        Ordering order = Ordering.builder()
                 .memberId(Long.parseLong(userId))
                 .productId(orderDto.getProductId())
                 .quantity(orderDto.getProductCount())
                 .build();
-        orderingRepository.save(ordering);
-        return  ordering;
+
+        return orderingRepository.save(order);
     }
-
-
-    public Ordering orderFeignKafkaCreate(OrderCreateDto orderDto, String userId){
-
-        ProductDto productDto = productFeign.getProductById(orderDto.getProductId(), userId);
-
-        int quantity = orderDto.getProductCount();
-        if(productDto.getStockQuantity() < quantity){
-            throw new IllegalArgumentException("재고 부족");
-        }else {
-            ProductUpdateStockDto dto = ProductUpdateStockDto.builder().productId(orderDto.getProductId())
-                    .productQuantity(orderDto.getProductCount()).build();
-//            productFeign.updateProductStock(dto);
-            kafkaTemplate.send("update-stock-topic", dto);
-
-        }
-        Ordering ordering = Ordering.builder()
-                .memberId(Long.parseLong(userId))
-                .productId(orderDto.getProductId())
-                .quantity(orderDto.getProductCount())
-                .build();
-        orderingRepository.save(ordering);
-        return  ordering;
-    }
-
 }
