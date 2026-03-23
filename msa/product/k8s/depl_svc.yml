@@ -45,22 +45,22 @@ spec:
         - name: AWS_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: my-app-secrets
+              name: aws-secret
               key: AWS_ACCESS_KEY
         - name: AWS_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: my-app-secrets
+              name: aws-secret
               key: AWS_SECRET_KEY
         - name: AWS_REGION
           valueFrom:
             secretKeyRef:
-              name: my-app-secrets
+              name: aws-secret
               key: AWS_REGION
         - name: S3_BUCKET
           valueFrom:
             secretKeyRef:
-              name: my-app-secrets
+              name: aws-secret
               key: S3_BUCKET
         # 컨테이너 상태 확인 
         readinessProbe:

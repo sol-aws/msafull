@@ -57,12 +57,12 @@ public class JwtAuthFilter implements GlobalFilter {
                 || path.equals("/member/doLogin")
                 || path.equals("/member/refresh-token")
                 || path.equals("/product/list")
-                || path.matches("^/product/\d+$")
+                || path.matches("^/product/\\d+$")
                 || path.equals("/member-service/member/create")
                 || path.equals("/member-service/member/doLogin")
                 || path.equals("/member-service/member/refresh-token")
                 || path.equals("/product-service/product/list")
-                || path.matches("^/product-service/product/\d+$");
+                || path.matches("^/product-service/product/\\d+$");
         if (isPublic) {
             return chain.filter(exchange);
         }
