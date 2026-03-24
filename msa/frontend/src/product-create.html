@@ -9,47 +9,53 @@
 <body>
   <header class="header">
     <div class="container">
-      <a href="/" class="brand">Soldesk Mall</a>
+      <a href="/" class="brand">Soldesk <span class="brand-accent">Mall</span></a>
       <nav class="nav">
-        <a class="btn btn-secondary" href="/">메인</a>
-        <a class="btn btn-secondary" href="/login.html">로그인</a>
-        <a class="btn btn-secondary" href="/signup.html">회원가입</a>
-        <div id="userBox" class="btn btn-secondary"></div>
+        <a class="btn btn-light" href="/">메인</a>
+        <a class="btn btn-secondary" data-guest-only href="/login.html">로그인</a>
+        <a class="btn btn-secondary" data-guest-only href="/signup.html">회원가입</a>
+        <div id="userBox"></div>
       </nav>
     </div>
   </header>
 
-  <section class="form-wrap">
-    <h2>상품등록</h2>
-    <form id="productForm" enctype="multipart/form-data">
-      <div class="field">
-        <label for="name">상품명</label>
-        <input id="name" name="name" type="text" required>
-      </div>
-      <div class="field">
-        <label for="category">카테고리</label>
-        <input id="category" name="category" type="text" placeholder="예: 의류, 전자기기">
-      </div>
-      <div class="field">
-        <label for="imageFile">상품 이미지 파일</label>
-        <input id="imageFile" name="imageFile" type="file" accept="image/*" required>
-      </div>
-      <div class="field">
-        <label for="price">가격</label>
-        <input id="price" name="price" type="number" min="0" required>
-      </div>
-      <div class="field">
-        <label for="stockQuantity">재고수량</label>
-        <input id="stockQuantity" name="stockQuantity" type="number" min="0" required>
-      </div>
-      <div class="field">
-        <label for="description">상품설명</label>
-        <textarea id="description" name="description"></textarea>
-      </div>
-      <button class="btn btn-primary" type="submit">상품등록</button>
-      <div id="productMessage" style="display:none;"></div>
-    </form>
-  </section>
+  <main class="form-page">
+    <section class="form-wrap">
+      <h2>상품등록</h2>
+      <div class="form-intro">기존 상품등록 기능은 그대로 유지하고, 화면만 실제 쇼핑몰 관리자 등록 화면처럼 정리했습니다.</div>
+      <form id="productForm" enctype="multipart/form-data">
+        <div class="field">
+          <label for="name">상품명</label>
+          <input id="name" name="name" type="text" required>
+        </div>
+        <div class="field">
+          <label for="category">카테고리</label>
+          <input id="category" name="category" type="text" placeholder="예: 의류, 전자기기">
+        </div>
+        <div class="field">
+          <label for="imageFile">상품 이미지 파일</label>
+          <input id="imageFile" name="imageFile" type="file" accept="image/*" required>
+        </div>
+        <div class="field">
+          <label for="price">가격</label>
+          <input id="price" name="price" type="number" min="0" required>
+        </div>
+        <div class="field">
+          <label for="stockQuantity">재고수량</label>
+          <input id="stockQuantity" name="stockQuantity" type="number" min="0" required>
+        </div>
+        <div class="field">
+          <label for="description">상품설명</label>
+          <textarea id="description" name="description"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">상품등록</button>
+          <a class="btn btn-light" href="/">메인으로</a>
+        </div>
+        <div id="productMessage" style="display:none;"></div>
+      </form>
+    </section>
+  </main>
 
   <script src="/assets/app.js"></script>
   <script>

@@ -19,17 +19,32 @@ function getToken() {
   return auth ? auth.token : null;
 }
 
+function toggleHeaderMenus(auth) {
+  document.querySelectorAll('[data-guest-only]').forEach(function (el) {
+    el.style.display = auth ? 'none' : '';
+  });
+
+  document.querySelectorAll('[data-auth-only]').forEach(function (el) {
+    el.style.display = auth ? '' : 'none';
+  });
+}
+
 function renderHeader() {
   const auth = getAuth();
   const userBox = document.getElementById('userBox');
+
+  toggleHeaderMenus(auth);
+
   if (!userBox) {
     return;
   }
 
   if (auth) {
     userBox.innerHTML = `
-      <span>${auth.nickname || auth.name || auth.loginId || auth.email}님</span>
-      <button class="btn btn-danger" id="logoutBtn" type="button">로그아웃</button>
+      <div class="user-chip">
+        <span class="user-chip-label">${auth.nickname || auth.name || auth.loginId || auth.email}님</span>
+        <button class="btn btn-dark" id="logoutBtn" type="button">로그아웃</button>
+      </div>
     `;
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', function () {
@@ -37,7 +52,7 @@ function renderHeader() {
       window.location.href = '/';
     });
   } else {
-    userBox.innerHTML = '<span>비회원 상태</span>';
+    userBox.innerHTML = '';
   }
 }
 
@@ -101,6 +116,16 @@ function getQueryParam(name) {
   return params.get(name);
 }
 
+function buildStockBadge(stockQuantity) {
+  if (stockQuantity < 1) {
+    return '<span class="stock-badge soldout">품절</span>';
+  }
+  if (stockQuantity < 6) {
+    return '<span class="stock-badge limited">수량한정</span>';
+  }
+  return '<span class="stock-badge normal">판매중</span>';
+}
+
 async function loadProducts() {
   const productList = document.getElementById('productList');
   if (!productList) {
@@ -109,6 +134,11 @@ async function loadProducts() {
 
   try {
     const products = await apiRequest('/product-service/product/list', { method: 'GET', headers: {} });
+    const countEl = document.getElementById('productCount');
+    if (countEl) {
+      countEl.textContent = `총 ${products.length}개의 상품`;
+    }
+
     if (!products.length) {
       productList.innerHTML = '<div class="empty">등록된 상품이 없습니다. 첫 상품을 등록해보세요.</div>';
       return;
@@ -116,16 +146,21 @@ async function loadProducts() {
 
     productList.innerHTML = products.map(function (product) {
       return `
-        <div class="card card-link" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
-          <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
-          <div class="card-body">
-            <div class="card-title">${product.name}</div>
-            <div class="card-meta">${product.category || '카테고리 없음'}</div>
-            <div class="card-price">${formatPrice(product.price)}</div>
-            <div class="card-meta">재고: ${product.stockQuantity}개</div>
-            <div>${product.description || ''}</div>
+        <article class="card card-link" onclick="goToProductDetail(${product.id})" role="button" tabindex="0">
+          <div class="card-image-wrap">
+            <img src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
+            ${buildStockBadge(product.stockQuantity)}
           </div>
-        </div>
+          <div class="card-body">
+            <div class="card-meta-row">
+              <span class="card-meta">${product.category || '전체 카테고리'}</span>
+            </div>
+            <div class="card-title">${product.name}</div>
+            <div class="card-price">${formatPrice(product.price)}</div>
+            <div class="card-sub">재고 ${product.stockQuantity}개</div>
+            <div class="card-description">${product.description || '등록된 상품 설명이 없습니다.'}</div>
+          </div>
+        </article>
       `;
     }).join('');
   } catch (error) {
@@ -162,14 +197,14 @@ async function loadProductDetail() {
           <img class="detail-image" src="${getImageUrl(product.imageUrl)}" alt="${product.name}">
         </div>
         <div class="detail-content">
-          <div class="detail-category">${product.category || '카테고리 없음'}</div>
+          <div class="detail-category">${product.category || '전체 카테고리'}</div>
           <h1 class="detail-title">${product.name}</h1>
           <div class="detail-price">${formatPrice(product.price)}</div>
           <div class="detail-stock" id="detailStock">재고: ${product.stockQuantity}개</div>
           <p class="detail-description">${product.description || '상품 설명이 없습니다.'}</p>
           <div class="detail-actions">
-            <button class="btn btn-primary" id="purchaseBtn" type="button" ${product.stockQuantity < 1 ? 'disabled' : ''}>구매하기</button>
-            <a class="btn btn-secondary" href="/">메인으로</a>
+            <button class="btn btn-primary btn-large" id="purchaseBtn" type="button" ${product.stockQuantity < 1 ? 'disabled' : ''}>구매하기</button>
+            <a class="btn btn-light btn-large" href="/">메인으로</a>
           </div>
           <div id="purchaseMessage" style="display:none;"></div>
         </div>

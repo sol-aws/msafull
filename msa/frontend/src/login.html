@@ -9,29 +9,36 @@
 <body>
   <header class="header">
     <div class="container">
-      <a href="/" class="brand">Soldesk Mall</a>
+      <a href="/" class="brand">Soldesk <span class="brand-accent">Mall</span></a>
       <nav class="nav">
-        <a class="btn btn-secondary" href="/">메인</a>
-        <a class="btn btn-secondary" href="/signup.html">회원가입</a>
+        <a class="btn btn-light" href="/">메인</a>
+        <a class="btn btn-secondary" data-guest-only href="/signup.html">회원가입</a>
+        <div id="userBox"></div>
       </nav>
     </div>
   </header>
 
-  <section class="form-wrap">
-    <h2>로그인</h2>
-    <form id="loginForm">
-      <div class="field">
-        <label for="loginId">아이디</label>
-        <input id="loginId" name="loginId" type="text" required>
-      </div>
-      <div class="field">
-        <label for="password">비밀번호</label>
-        <input id="password" name="password" type="password" required>
-      </div>
-      <button class="btn btn-primary" type="submit">로그인</button>
-      <div id="loginMessage" style="display:none;"></div>
-    </form>
-  </section>
+  <main class="form-page">
+    <section class="form-wrap">
+      <h2>로그인</h2>
+      <div class="form-intro">아이디와 비밀번호를 입력하면 바로 메인 쇼핑 화면으로 이동합니다.</div>
+      <form id="loginForm">
+        <div class="field">
+          <label for="loginId">아이디</label>
+          <input id="loginId" name="loginId" type="text" required>
+        </div>
+        <div class="field">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" required>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">로그인</button>
+          <a class="btn btn-light" href="/">메인으로</a>
+        </div>
+        <div id="loginMessage" style="display:none;"></div>
+      </form>
+    </section>
+  </main>
 
   <script src="/assets/app.js"></script>
   <script>
