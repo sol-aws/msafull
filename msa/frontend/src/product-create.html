@@ -22,7 +22,7 @@
   <main class="form-page">
     <section class="form-wrap">
       <h2>상품등록</h2>
-      <div class="form-intro">기존 상품등록 기능은 그대로 유지하고, 화면만 실제 쇼핑몰 관리자 등록 화면처럼 정리했습니다.</div>
+      <div class="form-intro">판매할 상품 정보를 입력하고 이미지를 등록해보세요.</div>
       <form id="productForm" enctype="multipart/form-data">
         <div class="field">
           <label for="name">상품명</label>
@@ -89,7 +89,7 @@
           window.location.href = '/';
         }, 700);
       } catch (error) {
-        showMessage('productMessage', '상품 등록에 실패했습니다. S3 설정과 로그인 상태를 확인해주세요.', 'error');
+        showMessage('productMessage', '상품 등록에 실패했습니다. 입력값과 로그인 상태를 확인해주세요.', 'error');
       }
     });
   </script>
